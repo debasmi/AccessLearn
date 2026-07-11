@@ -11,7 +11,7 @@ from pydub import AudioSegment
 import tempfile
 
 # ---------------- CONFIG ----------------
-genai.configure(api_key="AIzaSyCAmlqHeDK_95FYvLIgcdV-z6W8Xd8_yak")
+genai.configure(api_key="ownapikey")
 AUDIO_FILE = "/Users/debasmibasu/Documents/SIS/blind user/lecture1audio.wav"
 SIGN_WAIT_TIME = 10  # seconds to wait for sign language question
 
