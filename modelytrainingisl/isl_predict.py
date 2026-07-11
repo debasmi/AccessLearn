@@ -1,15 +1,4 @@
-"""
-Indian Sign Language (ISL) - Real-Time Inference
-=================================================
-Run predictions on a single image OR live webcam feed.
 
-Usage:
-  # Single image
-  python isl_predict.py --model_dir isl_model --image hand.jpg
-
-  # Live webcam
-  python isl_predict.py --model_dir isl_model --webcam
-"""
 
 import os
 import sys
@@ -26,13 +15,10 @@ import torch
 import torch.nn as nn
 
 
-# ── MediaPipe ────────────────────────────────────────────────────────────────
 mp_hands    = mp.solutions.hands
 mp_drawing  = mp.solutions.drawing_utils
 mp_draw_styles = mp.solutions.drawing_styles
 
-
-# ── Same model definition as training ────────────────────────────────────────
 class ISLNet(nn.Module):
     def __init__(self, input_dim, num_classes, dropout=0.4):
         super().__init__()
@@ -45,8 +31,6 @@ class ISLNet(nn.Module):
     def forward(self, x):
         return self.net(x)
 
-
-# ── Feature extraction (must match training) ──────────────────────────────────
 def extract_landmarks(image_bgr, hands):
     img_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
     results = hands.process(img_rgb)
@@ -63,8 +47,6 @@ def extract_landmarks(image_bgr, hands):
     feats = np.concatenate([xs, ys]).astype(np.float32)
     return feats, results
 
-
-# ── Predictor class ───────────────────────────────────────────────────────────
 class ISLPredictor:
     def __init__(self, model_dir):
         with open(os.path.join(model_dir, "config.json")) as f:
@@ -91,7 +73,6 @@ class ISLPredictor:
         return top3
 
 
-# ── Single image prediction ───────────────────────────────────────────────────
 def predict_image(predictor, image_path):
     img = cv2.imread(image_path)
     if img is None:
@@ -112,7 +93,6 @@ def predict_image(predictor, image_path):
         bar = "█" * int(prob * 30)
         print(f"  #{rank}  {cls:>3}  {prob:.3f}  {bar}")
 
-    # Draw result on image
     if results.multi_hand_landmarks:
         mp_drawing.draw_landmarks(img, results.multi_hand_landmarks[0],
                                   mp_hands.HAND_CONNECTIONS,
@@ -128,7 +108,6 @@ def predict_image(predictor, image_path):
     print(f"\n💾  Annotated image saved → {out_path}")
 
 
-# ── Webcam inference ──────────────────────────────────────────────────────────
 def run_webcam(predictor):
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -166,13 +145,13 @@ def run_webcam(predictor):
                         mp_draw_styles.get_default_hand_landmarks_style(),
                         mp_draw_styles.get_default_hand_connections_style())
 
-                # Top-3 bar on right panel
+                
                 for i, (cls, p) in enumerate(top3):
                     y = 60 + i * 40
                     cv2.putText(frame, f"{cls}: {p:.2f}", (frame.shape[1]-160, y),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 100), 2)
 
-            # Big prediction overlay
+         
             cv2.rectangle(frame, (0, 0), (220, 80), (0, 0, 0), -1)
             cv2.putText(frame, label, (20, 65),
                         cv2.FONT_HERSHEY_SIMPLEX, 2.5, (0, 255, 0), 4)
@@ -187,7 +166,6 @@ def run_webcam(predictor):
     cv2.destroyAllWindows()
 
 
-# ── Entry point ───────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description="ISL Sign Language Inference")
     parser.add_argument("--model_dir", required=True, help="Folder with isl_best_model.pt etc.")
