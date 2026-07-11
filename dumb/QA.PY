@@ -9,23 +9,16 @@ from gtts import gTTS
 import google.generativeai as genai
 from pydub import AudioSegment
 import tempfile
-
-# ---------------- CONFIG ----------------
 genai.configure(api_key="ownapikey")
 AUDIO_FILE = "/Users/debasmibasu/Documents/SIS/blind user/lecture1audio.wav"
 SIGN_WAIT_TIME = 10  # seconds to wait for sign language question
-
-# ---------------- INITIALIZE ----------------
 pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=512)
 pygame.mixer.init()
-
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
-
 stop_audio = False
 paused = False
 
-# ---------------- AUDIO PLAYER ----------------
 class AudioPlayer:
     def __init__(self, audio_file):
         self.audio_file = audio_file
@@ -69,7 +62,7 @@ class AudioPlayer:
         return pygame.mixer.get_busy()
 
 def play_audio_continuous():
-    """Play lecture audio continuously in background."""
+   
     global stop_audio
     player = AudioPlayer(AUDIO_FILE)
     if not player.full_audio:
@@ -84,7 +77,7 @@ def play_audio_continuous():
         if current_pos >= len(player.full_audio):
             break
 
-# ---------------- GEMINI & TTS ----------------
+
 def ask_gemini(question: str) -> str:
     try:
         model = genai.GenerativeModel("gemini-2.5-flash")
