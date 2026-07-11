@@ -1,18 +1,6 @@
 """
 Indian Sign Language (ISL) - Text to Sign Display
-==================================================
-Type any text and see the corresponding ISL hand signs
-displayed as a slideshow using images from your dataset.
-
-Usage:
-  python isl_text_to_sign.py --data_dir "/path/to/Indian"
-  python isl_text_to_sign.py --data_dir "/path/to/Indian" --text "HELLO"
-  python isl_text_to_sign.py --data_dir "/path/to/Indian" --speed 1.5
-
-Controls (interactive mode):
-  - Type text and press Enter
-  - Press Q or ESC during slideshow to stop early
-  - Speed controlled by --speed (seconds per sign)
+slideshow using images from dataset.
 """
 
 import os
@@ -27,10 +15,9 @@ import cv2
 import numpy as np
 
 
-# ── Constants ────────────────────────────────────────────────────────────────
 IMG_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 DISPLAY_W, DISPLAY_H = 600, 600
-PANEL_H = 120          # bottom info panel height
+PANEL_H = 120         
 CANVAS_H = DISPLAY_H + PANEL_H
 
 BG_COLOR      = (15,  15,  15)
@@ -40,10 +27,6 @@ TEXT_COLOR    = (240, 240, 240)
 DIM_COLOR     = (120, 120, 120)
 BORDER_COLOR  = (60,  60,  60)
 
-
-# ════════════════════════════════════════════════════════════════════════════
-# 1. Build sign index from dataset folder
-# ════════════════════════════════════════════════════════════════════════════
 
 def build_sign_index(data_dir: str) -> dict:
     """
@@ -72,10 +55,6 @@ def build_sign_index(data_dir: str) -> dict:
     return index
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 2. Frame rendering helpers
-# ════════════════════════════════════════════════════════════════════════════
-
 def make_canvas():
     canvas = np.full((CANVAS_H, DISPLAY_W, 3), BG_COLOR, dtype=np.uint8)
     canvas[DISPLAY_H:, :] = PANEL_COLOR
@@ -92,7 +71,6 @@ def render_sign_frame(sign_img_path, char, position, total, full_text, speed):
     """Build a display frame for one sign."""
     canvas = make_canvas()
 
-    # ── Sign image ────────────────────────────────────────────────────────
     img = cv2.imread(sign_img_path)
     if img is not None:
         img = cv2.resize(img, (DISPLAY_W - 40, DISPLAY_H - 40))
@@ -100,28 +78,26 @@ def render_sign_frame(sign_img_path, char, position, total, full_text, speed):
     else:
         put_text_centered(canvas, "?", DISPLAY_H // 2, 4, DIM_COLOR, 6)
 
-    # ── Border ────────────────────────────────────────────────────────────
     cv2.rectangle(canvas, (10, 10), (DISPLAY_W - 10, DISPLAY_H - 10), BORDER_COLOR, 2)
 
-    # ── Big character label (top-left badge) ─────────────────────────────
     cv2.rectangle(canvas, (10, 10), (80, 80), ACCENT_COLOR, -1)
     cv2.putText(canvas, char, (18, 72),
                 cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 0), 4, cv2.LINE_AA)
 
-    # ── Progress indicator (top-right) ───────────────────────────────────
+
     prog_text = f"{position}/{total}"
     cv2.putText(canvas, prog_text, (DISPLAY_W - 90, 45),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, DIM_COLOR, 2, cv2.LINE_AA)
 
-    # ── Bottom panel ──────────────────────────────────────────────────────
+   
     panel_y = DISPLAY_H + 10
 
-    # Highlight current char in full text
+   
     display_text = ""
     for i, c in enumerate(full_text):
-        display_text += c  # we'll overlay color manually
+        display_text += c  
 
-    # Draw full text with current char highlighted
+  
     char_w = 22
     start_x = max(10, (DISPLAY_W - len(full_text) * char_w) // 2)
     for i, c in enumerate(full_text):
@@ -132,7 +108,7 @@ def render_sign_frame(sign_img_path, char, position, total, full_text, speed):
         cv2.putText(canvas, c, (x, panel_y + 45),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2, cv2.LINE_AA)
 
-    # Speed hint
+  
     hint = f"speed: {speed}s/sign  |  Q to skip"
     put_text_centered(canvas, hint, CANVAS_H - 15, 0.45, DIM_COLOR, 1)
 
@@ -172,10 +148,6 @@ def render_unknown_frame(char, position, total, full_text, speed):
     return canvas
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 3. Slideshow engine
-# ════════════════════════════════════════════════════════════════════════════
-
 def show_text_as_signs(text: str, sign_index: dict, speed: float):
     """Display each character in text as its ISL sign image."""
     text_upper = text.upper()
@@ -209,7 +181,6 @@ def show_text_as_signs(text: str, sign_index: dict, speed: float):
                 break
             continue
 
-        # Pick a random sample image for this sign
         img_path = random.choice(sign_index[char])
         frame = render_sign_frame(img_path, char, sign_pos, sign_count, text_upper, speed)
         cv2.imshow(window, frame)
@@ -221,10 +192,10 @@ def show_text_as_signs(text: str, sign_index: dict, speed: float):
             if key in (ord('q'), ord('Q'), 27):
                 cv2.destroyAllWindows()
                 return
-            # Redraw (keeps window responsive)
+          
             cv2.imshow(window, frame)
 
-    # End screen
+   
     end_canvas = make_canvas()
     put_text_centered(end_canvas, "Done!", DISPLAY_H // 2 - 20, 2.0, ACCENT_COLOR, 3)
     put_text_centered(end_canvas, f'"{text_upper}"', DISPLAY_H // 2 + 40, 0.8, TEXT_COLOR, 2)
@@ -232,11 +203,6 @@ def show_text_as_signs(text: str, sign_index: dict, speed: float):
     cv2.imshow(window, end_canvas)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-
-# ════════════════════════════════════════════════════════════════════════════
-# 4. Main
-# ════════════════════════════════════════════════════════════════════════════
 
 def main():
     parser = argparse.ArgumentParser(description="ISL Text → Sign Slideshow")
@@ -254,7 +220,7 @@ def main():
         print(f"\n🖐️  Showing: '{args.text}'")
         show_text_as_signs(args.text, sign_index, args.speed)
     else:
-        # Interactive loop
+        
         print("\n" + "─" * 50)
         print("  ISL Text → Sign  |  Interactive Mode")
         print("  Type any text and press Enter to see signs")
