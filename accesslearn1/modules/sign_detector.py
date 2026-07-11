@@ -10,11 +10,6 @@ try:
 except ImportError:
     READY = False
 
-# ── Simple landmark-based classifier for ASL fingerspelling ─────────────────
-# Each entry is (name, detector_fn).
-# This is a lightweight heuristic version — replace with a trained model
-# for production accuracy.
-
 def _fingers_up(hand_landmarks):
     """Return list [thumb, index, middle, ring, pinky] → 1=up, 0=down."""
     lm = hand_landmarks.landmark
