@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AccessLearn — Inclusive Learning Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+<style>
+:root {
+--sky: #e8f4fd; --mint: #e6f7f2; --lavender: #f0eeff; --peach: #fff3ed;
+--cream: #fafaf8; --white: #ffffff; --teal: #2ba89a; --teal-light: #4ec9bb;
+--violet: #7c6ef7; --violet-light: #a59ef9; --coral: #f07a5a; --gold: #f5b942;
+--text: #1a1a2e; --text-mid: #445566; --text-soft: #7a8899; --border: #dde8f0;
+--shadow: rgba(44,80,120,0.10); --radius: 18px; --radius-sm: 10px;
+--transition: 0.22s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+header { background: var(--white); border-bottom: 1.5px solid var(--border); padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 16px var(--shadow); }
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--teal), var(--violet)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 2px 8px rgba(124,110,247,0.25); }
+.logo-text { font-family: 'DM Serif Display', serif; font-size: 1.35rem; color: var(--text); letter-spacing: -0.3px; }
+.logo-text span { color: var(--teal); }
+nav { display: flex; gap: 6px; }
+.nav-btn { background: none; border: none; padding: 7px 16px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; color: var(--text-mid); cursor: pointer; transition: var(--transition); }
+.nav-btn:hover, .nav-btn.active { background: var(--sky); color: var(--teal); }
+.hero { padding: 56px 2rem 40px; max-width: 860px; margin: 0 auto; text-align: center; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--mint); color: var(--teal); border-radius: 50px; padding: 5px 16px; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.4px; margin-bottom: 18px; }
+.hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; color: var(--text); margin-bottom: 14px; }
+.hero h1 em { color: var(--teal); font-style: normal; }
+.hero p { color: var(--text-mid); font-size: 1.05rem; line-height: 1.7; max-width: 580px; margin: 0 auto 28px; }
+.profile-section { max-width: 960px; margin: 0 auto 32px; padding: 0 2rem; }
+.section-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-soft); margin-bottom: 14px; }
+.profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 12px; }
+.profile-card { background: var(--white); border: 2px solid var(--border); border-radius: var(--radius); padding: 18px 14px; text-align: center; cursor: pointer; transition: var(--transition); user-select: none; position: relative; overflow: hidden; }
+.profile-card:hover { border-color: var(--teal-light); box-shadow: 0 4px 18px rgba(43,168,154,0.13); transform: translateY(-2px); }
+.profile-card.selected { border-color: var(--teal); background: var(--mint); box-shadow: 0 4px 20px rgba(43,168,154,0.18); }
+.profile-card.selected::after { content: '✓'; position: absolute; top: 8px; right: 10px; background: var(--teal); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; line-height: 20px; }
+.profile-emoji { font-size: 2rem; margin-bottom: 8px; display: block; }
+.profile-name { font-weight: 700; font-size: 0.88rem; color: var(--text); }
+.profile-desc { font-size: 0.74rem; color: var(--text-soft); margin-top: 3px; line-height: 1.4; }
+.main-layout { max-width: 960px; margin: 0 auto; padding: 0 2rem 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width: 680px) { .main-layout { grid-template-columns: 1fr; } }
+.panel { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--border); padding: 24px; box-shadow: 0 2px 12px var(--shadow); }
+.panel-full { grid-column: 1 / -1; }
+.panel-title { font-weight: 700; font-size: 0.95rem; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.panel-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.icon-teal { background: var(--mint); } .icon-violet { background: var(--lavender); } .icon-coral { background: var(--peach); } .icon-gold { background: #fff8e6; }
+.upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 28px 20px; text-align: center; cursor: pointer; transition: var(--transition); background: var(--cream); }
+.upload-zone:hover, .upload-zone.drag-over { border-color: var(--teal-light); background: var(--mint); }
+.upload-zone .up-icon { font-size: 2rem; margin-bottom: 8px; }
+.upload-zone p { font-size: 0.88rem; color: var(--text-mid); }
+.upload-zone p strong { color: var(--teal); }
+.upload-zone small { color: var(--text-soft); font-size: 0.75rem; }
+#fileInput { display: none; }
+.file-preview { display: none; align-items: center; gap: 12px; background: var(--mint); border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 12px; }
+.file-preview.show { display: flex; }
+.file-preview-icon { font-size: 1.8rem; }
+.file-preview-info { flex: 1; }
+.file-preview-name { font-weight: 600; font-size: 0.88rem; color: var(--text); }
+.file-preview-size { font-size: 0.75rem; color: var(--text-soft); }
+.file-remove { background: none; border: none; cursor: pointer; color: var(--text-soft); font-size: 1.1rem; padding: 2px 6px; border-radius: 6px; transition: var(--transition); }
+.file-remove:hover { background: #fee; color: var(--coral); }
+.audio-controls { display: none; margin-top: 12px; }
+.audio-controls.show { display: block; }
+audio { width: 100%; border-radius: 8px; height: 36px; }
+.mode-tabs { display: flex; gap: 6px; margin-bottom: 14px; background: var(--cream); border-radius: 50px; padding: 4px; }
+.mode-tab { flex: 1; border: none; background: none; padding: 8px 10px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: var(--transition); color: var(--text-soft); }
+.mode-tab.active { background: var(--white); color: var(--teal); font-weight: 700; box-shadow: 0 1px 6px var(--shadow); }
+.question-input { width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; font-family: 'DM Sans', sans-serif; font-size: 0.92rem; color: var(--text); background: var(--cream); resize: vertical; min-height: 90px; transition: var(--transition); outline: none; }
+.question-input:focus { border-color: var(--teal-light); background: var(--white); box-shadow: 0 0 0 3px rgba(43,168,154,0.10); }
+.voice-area { text-align: center; padding: 18px 10px; }
+.mic-btn { width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--violet)); border: none; cursor: pointer; font-size: 1.8rem; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; box-shadow: 0 4px 20px rgba(43,168,154,0.30); transition: var(--transition); position: relative; }
+.mic-btn:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(43,168,154,0.40); }
+.mic-btn.recording { background: linear-gradient(135deg, var(--coral), #e05535); animation: pulse-ring 1.2s infinite; }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(240,122,90,0.5); } 70% { box-shadow: 0 0 0 18px rgba(240,122,90,0); } 100% { box-shadow: 0 0 0 0 rgba(240,122,90,0); } }
+.voice-status { font-size: 0.82rem; color: var(--text-soft); }
+.voice-transcript { margin-top: 10px; background: var(--cream); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.88rem; color: var(--text-mid); min-height: 40px; border: 1px solid var(--border); text-align: left; display: none; }
+.voice-transcript.show { display: block; }
+.sign-area { text-align: center; }
+.cam-placeholder { background: #1a1a2e; border-radius: var(--radius-sm); height: 160px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: #7a8899; font-size: 0.85rem; margin-bottom: 10px; position: relative; overflow: hidden; }
+.cam-placeholder video, .cam-placeholder canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm); }
+.cam-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; background: rgba(26,26,46,0.7); border-radius: var(--radius-sm); z-index: 2; }
+.cam-overlay.hidden { display: none; }
+#camVideo { display: none; } #camCanvas { display: none; }
+.output-mode-group { display: flex; flex-direction: column; gap: 10px; }
+.output-option { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); cursor: pointer; transition: var(--transition); background: var(--cream); user-select: none; }
+.output-option:hover { border-color: var(--violet-light); background: var(--lavender); }
+.output-option.selected { border-color: var(--violet); background: var(--lavender); box-shadow: 0 2px 10px rgba(124,110,247,0.12); }
+.output-option input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--violet); flex-shrink: 0; }
+.output-option-label { flex: 1; }
+.output-option-name { font-weight: 600; font-size: 0.88rem; color: var(--text); }
+.output-option-sub { font-size: 0.74rem; color: var(--text-soft); }
+.output-option-emoji { font-size: 1.3rem; }
+.submit-bar { grid-column: 1 / -1; display: flex; justify-content: center; margin-top: 4px; gap: 12px; flex-wrap: wrap; }
+.submit-btn { background: linear-gradient(135deg, var(--teal), var(--violet)); color: white; border: none; padding: 14px 48px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(43,168,154,0.30); transition: var(--transition); display: flex; align-items: center; gap: 10px; letter-spacing: 0.2px; }
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(43,168,154,0.38); }
+.submit-btn:active { transform: translateY(0); }
+.submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.cancel-btn { background: none; color: var(--coral); border: 1.5px solid var(--coral); padding: 14px 28px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 8px; transition: var(--transition); }
+.cancel-btn:hover { background: var(--peach); }
+.cancel-btn.show { display: flex; }
+.response-panel { grid-column: 1 / -1; display: none; }
+.response-panel.show { display: block; }
+.response-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.response-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.resp-tab { padding: 6px 14px; border-radius: 50px; border: 1.5px solid var(--border); background: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: var(--transition); color: var(--text-soft); }
+.resp-tab.active { background: var(--teal); color: white; border-color: var(--teal); }
+.resp-tab:hover:not(.active) { border-color: var(--teal-light); color: var(--teal); }
+.resp-content { display: none; }
+.resp-content.active { display: block; }
+.text-answer { background: var(--cream); border-radius: var(--radius-sm); padding: 18px; font-size: 0.95rem; line-height: 1.75; color: var(--text); border: 1px solid var(--border); min-height: 80px; white-space: pre-wrap; }
+.text-answer.large-print { font-size: 1.3rem; line-height: 2.1; letter-spacing: 0.4px; }
+.large-print-toggle { display: flex; align-items: center; gap: 7px; font-size: 0.8rem; color: var(--text-soft); margin-bottom: 10px; cursor: pointer; user-select: none; }
+.large-print-toggle input { accent-color: var(--teal); }
+.stream-cursor::after { content: '▋'; animation: blink 0.8s step-end infinite; color: var(--teal); }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.status-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; padding: 4px 12px; border-radius: 50px; margin-bottom: 12px; }
+.status-badge.fetching { background: var(--lavender); color: var(--violet); }
+.status-badge.streaming { background: var(--mint); color: var(--teal); }
+.status-badge.done { background: var(--mint); color: var(--teal); }
+.status-badge.error { background: var(--peach); color: var(--coral); }
+.status-badge.retrying { background: #fff8e6; color: #b8860b; }
+.status-badge.saving { background: #e8f4fd; color: #1a6fa8; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.status-dot.pulse { animation: dot-pulse 1s ease-in-out infinite; }
+@keyframes dot-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
+.braille-output { background: #1a1a2e; border-radius: var(--radius-sm); padding: 20px; font-size: 2rem; line-height: 2; letter-spacing: 4px; color: #e8f4fd; font-family: monospace; word-break: break-all; min-height: 80px; border: 1px solid #2a3050; }
+.braille-note { font-size: 0.78rem; color: var(--text-soft); margin-top: 8px; }
+.sign-display { background: #1a1a2e; border-radius: var(--radius-sm); padding: 20px; min-height: 260px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; }
+.sign-letter-show { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.sign-char-card { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; width: 56px; height: 72px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; transition: var(--transition); cursor: default; }
+.sign-char-card.active-sign { background: rgba(43,168,154,0.25); border-color: var(--teal-light); transform: scale(1.18); box-shadow: 0 0 18px rgba(43,168,154,0.35); }
+.sign-char-card .char-letter { font-size: 0.65rem; color: #7aabb8; font-weight: 700; letter-spacing: 1px; }
+.sign-char-card .char-hand { font-size: 1.8rem; }
+.tts-area { text-align: center; padding: 20px 10px; }
+.tts-play-btn { background: linear-gradient(135deg, var(--teal), var(--teal-light)); color: white; border: none; width: 64px; height: 64px; border-radius: 50%; font-size: 1.6rem; cursor: pointer; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 18px rgba(43,168,154,0.30); transition: var(--transition); }
+.tts-play-btn:hover { transform: scale(1.08); }
+.tts-text-preview { background: var(--mint); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.88rem; color: var(--text-mid); line-height: 1.6; margin-top: 10px; text-align: left; max-height: 120px; overflow-y: auto; }
+.tts-waveform { display: flex; gap: 3px; align-items: center; justify-content: center; height: 32px; margin: 8px 0; }
+.tts-bar { width: 4px; border-radius: 4px; background: var(--teal); animation: wave-anim 1s ease-in-out infinite; }
+@keyframes wave-anim { 0%, 100% { height: 6px; opacity: 0.4; } 50% { height: 22px; opacity: 1; } }
+.tts-bar:nth-child(2) { animation-delay: 0.1s; } .tts-bar:nth-child(3) { animation-delay: 0.2s; } .tts-bar:nth-child(4) { animation-delay: 0.3s; } .tts-bar:nth-child(5) { animation-delay: 0.2s; } .tts-bar:nth-child(6) { animation-delay: 0.1s; }
+.tts-waveform.hidden { display: none; }
+.loading-bar { height: 3px; background: linear-gradient(90deg, var(--teal), var(--violet), var(--teal)); background-size: 200% 100%; border-radius: 50px; margin-bottom: 12px; animation: shimmer 1.4s linear infinite; display: none; }
+.loading-bar.show { display: block; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.btn-sm { padding: 7px 14px; border-radius: 50px; border: 1.5px solid var(--border); background: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: var(--text-mid); transition: var(--transition); }
+.btn-sm:hover { background: var(--sky); color: var(--teal); border-color: var(--teal-light); }
+.copy-btn { display: flex; align-items: center; gap: 5px; }
+.empty-state { text-align: center; color: var(--text-soft); padding: 32px 20px; font-size: 0.9rem; }
+.empty-state .emoji { font-size: 2.5rem; margin-bottom: 10px; }
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: white; padding: 10px 20px; border-radius: 50px; font-size: 0.85rem; font-weight: 500; opacity: 0; transform: translateY(20px); transition: 0.3s; z-index: 999; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateY(0); }
+.spinner { width: 20px; height: 20px; border: 2.5px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+/* Saved-data restore banner */
+.restore-banner { background: var(--sky); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 10px 16px; font-size: 0.83rem; color: var(--text-mid); display: flex; align-items: center; gap: 10px; justify-content: space-between; margin-bottom: 14px; }
+.restore-banner button { background: none; border: none; cursor: pointer; color: var(--teal); font-weight: 700; font-size: 0.83rem; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon">♿</div>
+    <span class="logo-text">Access<span>Learn</span></span>
+  </a>
+  <nav>
+    <button class="nav-btn active" onclick="scrollToSection('profiles')">Profiles</button>
+    <button class="nav-btn" onclick="scrollToSection('upload')">Upload</button>
+    <button class="nav-btn" onclick="scrollToSection('ask')">Ask</button>
+    <button class="nav-btn" onclick="scrollToSection('response')">Response</button>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-badge">🌐 Inclusive Education Platform</div>
+  <h1>Learning without <em>barriers</em></h1>
+  <p>Upload any lecture audio or video, ask questions your way — voice, text, or sign language — and receive answers in the format that works best for you.</p>
+</div>
+
+<div class="profile-section" id="profiles">
+  <div class="section-label">1 · Choose your accessibility profile</div>
+  <div class="profile-grid">
+    <div class="profile-card" onclick="selectProfile('blind')" data-profile="blind"><span class="profile-emoji">🦯</span><div class="profile-name">Blind / Low Vision</div><div class="profile-desc">Voice Q&A + Braille output + Audio response</div></div>
+    <div class="profile-card" onclick="selectProfile('deaf')" data-profile="deaf"><span class="profile-emoji">🤟</span><div class="profile-name">Deaf / Hard of Hearing</div><div class="profile-desc">Text + Sign language output</div></div>
+    <div class="profile-card" onclick="selectProfile('mute')" data-profile="mute"><span class="profile-emoji">✋</span><div class="profile-name">Non-verbal / Mute</div><div class="profile-desc">Sign language input + Text/Audio output</div></div>
+    <div class="profile-card" onclick="selectProfile('lowvis')" data-profile="lowvis"><span class="profile-emoji">🔎</span><div class="profile-name">Partially Sighted</div><div class="profile-desc">Large print text + Audio response</div></div>
+    <div class="profile-card" onclick="selectProfile('custom')" data-profile="custom"><span class="profile-emoji">⚙️</span><div class="profile-name">Custom</div><div class="profile-desc">Choose your own input & output modes</div></div>
+  </div>
+</div>
+
+<div class="main-layout" id="upload">
+  <!-- Upload Panel -->
+  <div class="panel">
+    <div class="panel-title"><div class="panel-icon icon-teal">📁</div>2 · Upload Lecture File</div>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="handleDrag(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <div class="up-icon">☁️</div>
+      <p><strong>Click to upload</strong> or drag & drop</p>
+      <small>Supports MP3, WAV, MP4, WebM, OGG · Max 200MB</small>
+    </div>
+    <input type="file" id="fileInput" accept="audio/*,video/*" onchange="handleFileSelect(event)" />
+    <div class="file-preview" id="filePreview">
+      <div class="file-preview-icon" id="fileIcon">🎵</div>
+      <div class="file-preview-info">
+        <div class="file-preview-name" id="fileName">—</div>
+        <div class="file-preview-size" id="fileSize">—</div>
+      </div>
+      <button class="file-remove" onclick="removeFile()" title="Remove file">✕</button>
+    </div>
+    <div class="audio-controls" id="audioControls"><audio id="audioPlayer" controls></audio></div>
+  </div>
+
+  <!-- Input Mode Panel -->
+  <div class="panel" id="ask">
+    <div class="panel-title"><div class="panel-icon icon-violet">💬</div>3 · Ask Your Question</div>
+    <!-- Restore banner (shown if saved data found) -->
+    <div class="restore-banner" id="restoreBanner" style="display:none">
+      📂 Previous question found in storage.
+      <button onclick="restoreSavedInput()">Restore ↩</button>
+      <button onclick="dismissRestore()" style="color:var(--text-soft)">Dismiss</button>
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="switchInputMode('text', this)">⌨️ Text</button>
+      <button class="mode-tab" onclick="switchInputMode('voice', this)">🎤 Voice</button>
+      <button class="mode-tab" onclick="switchInputMode('sign', this)">✋ Sign</button>
+    </div>
+    <div id="mode-text">
+      <textarea class="question-input" id="questionText" placeholder="Type your question about the lecture here…" rows="4"></textarea>
+    </div>
+    <div id="mode-voice" style="display:none">
+      <div class="voice-area">
+        <button class="mic-btn" id="micBtn" onclick="toggleVoice()">🎤</button>
+        <div class="voice-status" id="voiceStatus">Tap the mic to start speaking</div>
+      </div>
+      <div class="voice-transcript" id="voiceTranscript"></div>
+    </div>
+    <div id="mode-sign" style="display:none">
+      <div class="sign-area">
+        <div class="cam-placeholder" id="camBox">
+          <video id="camVideo" autoplay muted playsinline></video>
+          <canvas id="camCanvas"></canvas>
+          <div class="cam-overlay" id="camOverlay"><span style="font-size:2rem">📷</span><span>Camera not active</span></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <button class="btn-sm" onclick="startCamera()">📷 Start Camera</button>
+          <button class="btn-sm" onclick="captureSign()">📸 Capture Sign</button>
+          <button class="btn-sm" onclick="stopCamera()">⛔ Stop Camera</button>
+        </div>
+        <div class="voice-transcript show" id="signDetected" style="margin-top:10px">Sign camera ready. Position your hand in the frame and click "Capture Sign".</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Output Preferences -->
+  <div class="panel">
+    <div class="panel-title"><div class="panel-icon icon-coral">📤</div>4 · Response Format</div>
+    <div class="output-mode-group" id="outputOptions">
+      <label class="output-option selected" onclick="toggleOutput(this)">
+        <input type="checkbox" checked value="text" /><span class="output-option-emoji">📝</span>
+        <div class="output-option-label"><div class="output-option-name">Text Answer</div><div class="output-option-sub">Written response on screen</div></div>
+      </label>
+      <label class="output-option" onclick="toggleOutput(this)">
+        <input type="checkbox" value="audio" /><span class="output-option-emoji">🔊</span>
+        <div class="output-option-label"><div class="output-option-name">Audio (Text-to-Speech)</div><div class="output-option-sub">Hear the answer spoken aloud</div></div>
+      </label>
+      <label class="output-option" onclick="toggleOutput(this)">
+        <input type="checkbox" value="braille" /><span class="output-option-emoji">⠿</span>
+        <div class="output-option-label"><div class="output-option-name">Braille (Grade 1)</div><div class="output-option-sub">Unicode Braille representation</div></div>
+      </label>
+      <label class="output-option" onclick="toggleOutput(this)">
+        <input type="checkbox" value="sign" /><span class="output-option-emoji">🤟</span>
+        <div class="output-option-label"><div class="output-option-name">Sign Language Display</div><div class="output-option-sub">Animated ISL letter-by-letter</div></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="panel">
+    <div class="panel-title"><div class="panel-icon icon-gold">⚙️</div>Settings</div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div style="font-size:0.8rem;font-weight:600;color:var(--text-soft);margin-bottom:6px">Gemini API Key</div>
+        <input type="password" id="apiKey" placeholder="AIza…" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:DM Sans,sans-serif;font-size:0.85rem;outline:none;color:var(--text);background:var(--cream);transition:var(--transition)" onfocus="this.style.borderColor='var(--teal-light)'" onblur="this.style.borderColor='var(--border)'" />
+        <div style="font-size:0.73rem;color:var(--text-soft);margin-top:4px">Your key stays local — never sent anywhere except Gemini</div>
+      </div>
+      <div>
+        <div style="font-size:0.8rem;font-weight:600;color:var(--text-soft);margin-bottom:6px">Max tokens: <span id="tokenVal">300</span></div>
+        <input type="range" id="tokenSlider" min="100" max="1024" step="50" value="300" style="width:100%;accent-color:var(--teal)" oninput="document.getElementById('tokenVal').textContent=this.value" />
+        <div style="font-size:0.73rem;color:var(--text-soft);margin-top:2px">Lower = faster response. Higher = more detail.</div>
+      </div>
+      <div>
+        <div style="font-size:0.8rem;font-weight:600;color:var(--text-soft);margin-bottom:6px">TTS Speed: <span id="speedVal">1.0×</span></div>
+        <input type="range" id="speedSlider" min="0.5" max="2.5" step="0.1" value="1.0" style="width:100%;accent-color:var(--teal)" oninput="document.getElementById('speedVal').textContent=parseFloat(this.value).toFixed(1)+'×'" />
+      </div>
+      <div>
+        <div style="font-size:0.8rem;font-weight:600;color:var(--text-soft);margin-bottom:6px">Extra Context (optional)</div>
+        <textarea placeholder="Topic of lecture, language, subject area…" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:DM Sans,sans-serif;font-size:0.82rem;color:var(--text);background:var(--cream);resize:none;outline:none;min-height:60px" id="extraContext" onfocus="this.style.borderColor='var(--teal-light)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div class="submit-bar">
+    <button class="submit-btn" id="submitBtn" onclick="submitQuestion()">
+      <span id="submitIcon">✨</span>
+      <span id="submitText">Get Answer</span>
+    </button>
+    <button class="cancel-btn" id="cancelBtn" onclick="cancelFetch()">⛔ Cancel</button>
+  </div>
+
+  <!-- Response Panel -->
+  <div class="panel response-panel panel-full" id="response">
+    <div class="loading-bar" id="loadingBar"></div>
+    <div id="statusBadgeWrap"></div>
+    <div class="response-header">
+      <div class="panel-title" style="margin-bottom:0"><div class="panel-icon icon-teal">💡</div>Answer</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="response-tabs" id="respTabs"></div>
+        <button class="btn-sm copy-btn" onclick="copyAnswer()">📋 Copy</button>
+        <button class="btn-sm" onclick="downloadBraille()" id="dlBrailleBtn" style="display:none">⬇️ Braille</button>
+      </div>
+    </div>
+    <div class="resp-content active" id="resp-text">
+      <label class="large-print-toggle"><input type="checkbox" id="largePrintToggle" onchange="toggleLargePrint()" /> Large Print Mode</label>
+      <div class="text-answer" id="textAnswer"><div class="empty-state"><div class="emoji">💬</div>Your answer will appear here…</div></div>
+    </div>
+    <div class="resp-content" id="resp-audio">
+      <div class="tts-area">
+        <button class="tts-play-btn" id="ttsPlayBtn" onclick="playTTS()">▶</button>
+        <div class="tts-waveform hidden" id="ttsWaveform">
+          <div class="tts-bar"></div><div class="tts-bar"></div><div class="tts-bar"></div>
+          <div class="tts-bar"></div><div class="tts-bar"></div><div class="tts-bar"></div>
+        </div>
+        <div class="tts-text-preview" id="ttsTextPreview">Answer will be read aloud. Click ▶ to play.</div>
+      </div>
+    </div>
+    <div class="resp-content" id="resp-braille">
+      <div class="braille-output" id="brailleOutput"><span style="color:#445;font-size:1.2rem">⠿ Braille will appear here…</span></div>
+      <div class="braille-note">Grade 1 Unicode Braille · Letters, digits and spaces represented · Punctuation shown as ?</div>
+    </div>
+    <div class="resp-content" id="resp-sign">
+      <div class="sign-display" id="signDisplay"><div style="color:#445">Sign language display will appear here</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ────────────────────────────────────────────────────────────
+// STATE
+// ────────────────────────────────────────────────────────────
+let currentProfile = null;
+let currentInputMode = 'text';
+let currentAnswer = '';
+let mediaStream = null;
+let recognition = null;
+let isRecording = false;
+let activeTabs = ['text'];
+let speechSynth = window.speechSynthesis;
+let currentUtterance = null;
+let abortController = null;
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1200;
+const FETCH_TIMEOUT_MS = 20000;
+const STORAGE_KEY = 'accesslearn_session';
+
+// ────────────────────────────────────────────────────────────
+// ★ STORAGE HELPERS
+// ────────────────────────────────────────────────────────────
+
+/**
+ * saveInputToStorage()
+ * Gathers all current user inputs and settings,
+ * then writes them to localStorage BEFORE the Gemini fetch.
+ */
+function saveInputToStorage() {
+  const selectedOutputs = Array.from(
+    document.querySelectorAll('#outputOptions input:checked')
+  ).map(c => c.value);
+
+  const payload = {
+    savedAt: new Date().toISOString(),
+    profile: currentProfile,
+    inputMode: currentInputMode,
+    question: getQuestion(),
+    outputs: selectedOutputs,
+    extraContext: document.getElementById('extraContext').value.trim(),
+    maxTokens: document.getElementById('tokenSlider').value,
+    ttsSpeed: document.getElementById('speedSlider').value
+    // NOTE: API key is intentionally NOT stored for security
+  };
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    console.log('[AccessLearn] Input saved to localStorage:', payload);
+  } catch (e) {
+    console.warn('[AccessLearn] localStorage write failed:', e);
+    // Non-fatal — continue with fetch even if save fails
+  }
+}
+
+/**
+ * loadFromStorage()
+ * Called on page load. If a previous session exists,
+ * shows the restore banner so the user can optionally reload it.
+ */
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (!data || !data.question) return;
+
+    // Show restore banner with timestamp
+    const when = data.savedAt
+      ? new Date(data.savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : 'earlier';
+    const banner = document.getElementById('restoreBanner');
+    banner.querySelector('span') && null; // no-op guard
+    banner.innerHTML = `
+      📂 Previous question from <strong>${when}</strong> found in storage.
+      <button onclick="restoreSavedInput()">Restore ↩</button>
+      <button onclick="dismissRestore()" style="color:var(--text-soft)">Dismiss</button>
+    `;
+    banner.style.display = 'flex';
+  } catch (e) {
+    console.warn('[AccessLearn] localStorage read failed:', e);
+  }
+}
+
+function restoreSavedInput() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+    // Restore profile
+    if (data.profile) selectProfile(data.profile);
+
+    // Restore input mode + question text
+    if (data.inputMode) {
+      const tabBtn = document.querySelector(`.mode-tab[onclick*="${data.inputMode}"]`);
+      if (tabBtn) switchInputMode(data.inputMode, tabBtn);
+    }
+    if (data.inputMode === 'text' && data.question) {
+      document.getElementById('questionText').value = data.question;
+    }
+
+    // Restore output selections
+    if (data.outputs && data.outputs.length) {
+      document.querySelectorAll('#outputOptions input[type=checkbox]').forEach(cb => {
+        const label = cb.closest('.output-option');
+        cb.checked = data.outputs.includes(cb.value);
+        label.classList.toggle('selected', cb.checked);
+      });
+    }
+
+    // Restore settings
+    if (data.extraContext) document.getElementById('extraContext').value = data.extraContext;
+    if (data.maxTokens) {
+      document.getElementById('tokenSlider').value = data.maxTokens;
+      document.getElementById('tokenVal').textContent = data.maxTokens;
+    }
+    if (data.ttsSpeed) {
+      document.getElementById('speedSlider').value = data.ttsSpeed;
+      document.getElementById('speedVal').textContent = parseFloat(data.ttsSpeed).toFixed(1) + '×';
+    }
+
+    dismissRestore();
+    showToast('↩ Previous session restored!');
+  } catch (e) {
+    showToast('❌ Could not restore session');
+  }
+}
+
+function dismissRestore() {
+  document.getElementById('restoreBanner').style.display = 'none';
+}
+
+function clearStorage() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+// ────────────────────────────────────────────────────────────
+// PROFILE PRESETS
+// ────────────────────────────────────────────────────────────
+const profilePresets = {
+  blind:  { inputs: ['voice','text'],       outputs: ['text','audio','braille'] },
+  deaf:   { inputs: ['text','sign'],         outputs: ['text','sign'] },
+  mute:   { inputs: ['sign','text'],         outputs: ['text','audio'] },
+  lowvis: { inputs: ['voice','text'],        outputs: ['text','audio'] },
+  custom: { inputs: ['text','voice','sign'], outputs: ['text','audio','braille','sign'] }
+};
+
+function selectProfile(p) {
+  document.querySelectorAll('.profile-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`[data-profile="${p}"]`).classList.add('selected');
+  currentProfile = p;
+  const preset = profilePresets[p];
+  document.querySelectorAll('#outputOptions input[type=checkbox]').forEach(cb => {
+    const label = cb.closest('.output-option');
+    cb.checked = preset.outputs.includes(cb.value);
+    label.classList.toggle('selected', cb.checked);
+  });
+  const preferred = preset.inputs[0];
+  const tabBtn = document.querySelector(`.mode-tab[onclick*="${preferred}"]`);
+  if (tabBtn) switchInputMode(preferred, tabBtn);
+  showToast(`Profile: ${p.charAt(0).toUpperCase() + p.slice(1)} applied ✓`);
+  document.getElementById('upload').scrollIntoView({ behavior:'smooth' });
+}
+
+function toggleOutput(label) {
+  const cb = label.querySelector('input[type=checkbox]');
+  setTimeout(() => label.classList.toggle('selected', cb.checked), 0);
+}
+
+// ────────────────────────────────────────────────────────────
+// FILE UPLOAD
+// ────────────────────────────────────────────────────────────
+function handleFileSelect(e) { processFile(e.target.files[0]); }
+function handleDrag(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('drag-over'); }
+function handleDragLeave() { document.getElementById('uploadZone').classList.remove('drag-over'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+}
+function processFile(file) {
+  if (!file) return;
+  const isAudio = file.type.startsWith('audio/'), isVideo = file.type.startsWith('video/');
+  if (!isAudio && !isVideo) { showToast('❌ Please upload an audio or video file'); return; }
+  const url = URL.createObjectURL(file);
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = formatBytes(file.size);
+  document.getElementById('fileIcon').textContent = isVideo ? '🎬' : '🎵';
+  document.getElementById('filePreview').classList.add('show');
+  document.getElementById('audioPlayer').src = url;
+  document.getElementById('audioControls').classList.add('show');
+  showToast('✅ File loaded!');
+  document.getElementById('ask').scrollIntoView({ behavior:'smooth' });
+}
+function removeFile() {
+  document.getElementById('filePreview').classList.remove('show');
+  document.getElementById('audioControls').classList.remove('show');
+  document.getElementById('audioPlayer').src = '';
+  document.getElementById('fileInput').value = '';
+}
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+
+// ────────────────────────────────────────────────────────────
+// INPUT MODES
+// ────────────────────────────────────────────────────────────
+function switchInputMode(mode, btn) {
+  currentInputMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  ['text','voice','sign'].forEach(m => {
+    document.getElementById('mode-'+m).style.display = (m === mode) ? 'block' : 'none';
+  });
+}
+
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showToast('⚠️ Voice recognition not supported in this browser'); return;
+  }
+  if (isRecording) stopVoice(); else startVoice();
+}
+
+function startVoice() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRec();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = 'en-IN';
+  recognition.onstart = () => {
+    isRecording = true;
+    document.getElementById('micBtn').classList.add('recording');
+    document.getElementById('micBtn').textContent = '⏹';
+    document.getElementById('voiceStatus').textContent = '🔴 Listening… speak your question';
+    document.getElementById('voiceTranscript').classList.add('show');
+    document.getElementById('voiceTranscript').textContent = '';
+  };
+  recognition.onresult = (e) => {
+    const t = Array.from(e.results).map(r => r[0].transcript).join('');
+    document.getElementById('voiceTranscript').textContent = t;
+  };
+  recognition.onend = () => stopVoice();
+  recognition.onerror = () => stopVoice();
+  recognition.start();
+}
+
+function stopVoice() {
+  isRecording = false;
+  if (recognition) recognition.stop();
+  document.getElementById('micBtn').classList.remove('recording');
+  document.getElementById('micBtn').textContent = '🎤';
+  document.getElementById('voiceStatus').textContent = 'Tap the mic to start speaking';
+}
+
+function getQuestion() {
+  if (currentInputMode === 'text')  return document.getElementById('questionText').value.trim();
+  if (currentInputMode === 'voice') return document.getElementById('voiceTranscript').textContent.trim();
+  if (currentInputMode === 'sign')  return document.getElementById('signDetected').textContent.trim();
+  return '';
+}
+
+async function startCamera() {
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const video = document.getElementById('camVideo');
+    video.srcObject = mediaStream;
+    video.style.display = 'block';
+    document.getElementById('camOverlay').classList.add('hidden');
+    document.getElementById('signDetected').textContent = '📷 Camera live. Position your hand and click Capture.';
+    showToast('📷 Camera started');
+  } catch(e) { showToast('❌ Camera access denied. Check browser permissions.'); }
+}
+
+function captureSign() {
+  const video = document.getElementById('camVideo');
+  if (!video.srcObject) { showToast('⚠️ Start camera first'); return; }
+  const canvas = document.getElementById('camCanvas');
+  canvas.width = video.videoWidth || 320;
+  canvas.height = video.videoHeight || 240;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.style.display = 'block';
+  document.getElementById('signDetected').textContent = '✋ Hand sign captured! (simulated: "What is this topic about?")';
+  showToast('📸 Sign captured');
+}
+
+function stopCamera() {
+  if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+  document.getElementById('camVideo').style.display = 'none';
+  document.getElementById('camCanvas').style.display = 'none';
+  document.getElementById('camOverlay').classList.remove('hidden');
+  showToast('⛔ Camera stopped');
+}
+
+// ────────────────────────────────────────────────────────────
+// GEMINI STREAMING
+// ────────────────────────────────────────────────────────────
+function setStatus(type, text) {
+  const wrap = document.getElementById('statusBadgeWrap');
+  const dotPulse = ['fetching','streaming','retrying','saving'].includes(type) ? ' pulse' : '';
+  wrap.innerHTML = `<div class="status-badge ${type}"><div class="status-dot${dotPulse}"></div>${text}</div>`;
+}
+function clearStatus() { document.getElementById('statusBadgeWrap').innerHTML = ''; }
+
+async function callGeminiWithStream(apiKey, prompt, maxTokens, signal) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
+  const body = JSON.stringify({
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 }
+  });
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+    signal
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    const errMsg = errData?.error?.message || `HTTP ${res.status}`;
+    const err = new Error(errMsg);
+    err.status = res.status;
+    throw err;
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let fullText = '';
+  let buffer = '';
+  const textEl = document.getElementById('textAnswer');
+
+  setStatus('streaming', 'Streaming answer…');
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const raw = line.slice(6).trim();
+      if (raw === '[DONE]') break;
+      try {
+        const json = JSON.parse(raw);
+        const chunk = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        if (chunk) {
+          fullText += chunk;
+          textEl.classList.add('stream-cursor');
+          textEl.textContent = fullText;
+        }
+      } catch(_) {}
+    }
+  }
+
+  textEl.classList.remove('stream-cursor');
+  return fullText || 'No answer returned.';
+}
+
+async function callGeminiWithRetry(apiKey, prompt, maxTokens, signal) {
+  let lastErr;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (attempt > 0) {
+      const delay = RETRY_DELAY_MS * attempt;
+      setStatus('retrying', `Retrying… (attempt ${attempt + 1}/${MAX_RETRIES + 1})`);
+      await new Promise(r => setTimeout(r, delay));
+      if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    }
+    try {
+      if (attempt === 0) setStatus('fetching', 'Connecting to Gemini…');
+      const text = await callGeminiWithStream(apiKey, prompt, maxTokens, signal);
+      return text;
+    } catch (err) {
+      lastErr = err;
+      if (err.name === 'AbortError') throw err;
+      const retryable = err.status === 429 || err.status === 503 || err.status === 500;
+      if (!retryable || attempt === MAX_RETRIES) throw err;
+    }
+  }
+  throw lastErr;
+}
+
+// ────────────────────────────────────────────────────────────
+// ★ MAIN SUBMIT — save first, then fetch
+// ────────────────────────────────────────────────────────────
+async function submitQuestion() {
+  const question = getQuestion();
+  if (!question) { showToast('⚠️ Please enter or speak a question first'); return; }
+
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey) { showToast('⚠️ Please enter your Gemini API key in Settings'); return; }
+
+  const selectedOutputs = Array.from(document.querySelectorAll('#outputOptions input:checked')).map(c => c.value);
+  if (!selectedOutputs.length) { showToast('⚠️ Select at least one output format'); return; }
+
+  // ── STEP 1: Save input to localStorage ──
+  setStatus('saving', 'Saving input…');
+  saveInputToStorage();
+  showToast('💾 Input saved locally');
+
+  // Small intentional pause so user sees the save status
+  await new Promise(r => setTimeout(r, 350));
+
+  // ── STEP 2: Prepare UI for fetch ──
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('submitIcon').innerHTML = '<div class="spinner"></div>';
+  document.getElementById('submitText').textContent = 'Getting answer…';
+  document.getElementById('cancelBtn').classList.add('show');
+  document.getElementById('loadingBar').classList.add('show');
+  document.getElementById('response').classList.add('show');
+  document.getElementById('response').scrollIntoView({ behavior:'smooth' });
+
+  // Reset text panel for streaming
+  document.getElementById('textAnswer').textContent = '';
+
+  // AbortController + timeout
+  abortController = new AbortController();
+  const timeoutId = setTimeout(() => abortController.abort(), FETCH_TIMEOUT_MS);
+
+  const extraCtx = document.getElementById('extraContext').value.trim();
+  const maxTokens = parseInt(document.getElementById('tokenSlider').value, 10);
+  const fullPrompt = extraCtx
+    ? `Context: ${extraCtx}\n\nAnswer concisely in ${maxTokens < 300 ? '2-3 sentences' : 'a clear paragraph'}.\n\nQuestion: ${question}`
+    : `Answer concisely in ${maxTokens < 300 ? '2-3 sentences' : 'a clear paragraph'}.\n\nQuestion: ${question}`;
+
+  buildResponseTabs(selectedOutputs);
+
+  // ── STEP 3: Fetch from Gemini ──
+  try {
+    setStatus('fetching', 'Connecting to Gemini…');
+    const answer = await callGeminiWithRetry(apiKey, fullPrompt, maxTokens, abortController.signal);
+    currentAnswer = answer;
+    setStatus('done', 'Answer ready ✓');
+    setTimeout(clearStatus, 3000);
+    renderResponse(answer, selectedOutputs);
+    // Clear storage after successful response (optional — comment out to persist)
+    // clearStorage();
+    showToast('✅ Answer ready!');
+  } catch(e) {
+    if (e.name === 'AbortError') {
+      setStatus('error', 'Cancelled');
+      document.getElementById('textAnswer').innerHTML = `<div style="color:var(--text-soft)">Request cancelled.</div>`;
+      showToast('⛔ Cancelled');
+    } else {
+      setStatus('error', 'Error — ' + (e.message || 'Unknown error').slice(0, 60));
+      document.getElementById('textAnswer').innerHTML = `<div style="color:var(--coral)">❌ ${e.message || 'API error'}</div>`;
+      showToast('❌ ' + (e.message || 'API error'));
+    }
+  } finally {
+    clearTimeout(timeoutId);
+    abortController = null;
+    btn.disabled = false;
+    document.getElementById('submitIcon').textContent = '✨';
+    document.getElementById('submitText').textContent = 'Get Answer';
+    document.getElementById('cancelBtn').classList.remove('show');
+    document.getElementById('loadingBar').classList.remove('show');
+  }
+}
+
+function cancelFetch() {
+  if (abortController) abortController.abort();
+}
+
+// ────────────────────────────────────────────────────────────
+// RESPONSE RENDERING
+// ────────────────────────────────────────────────────────────
+function buildResponseTabs(outputs) {
+  const tabsEl = document.getElementById('respTabs');
+  tabsEl.innerHTML = '';
+  activeTabs = outputs;
+  document.querySelectorAll('.resp-content').forEach(c => c.classList.remove('active'));
+  outputs.forEach((out, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'resp-tab' + (i === 0 ? ' active' : '');
+    const labels = { text:'📝 Text', audio:'🔊 Audio', braille:'⠿ Braille', sign:'🤟 Sign' };
+    tab.textContent = labels[out] || out;
+    tab.onclick = () => {
+      document.querySelectorAll('.resp-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.resp-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('resp-'+out).classList.add('active');
+    };
+    tabsEl.appendChild(tab);
+    if (i === 0) document.getElementById('resp-'+out).classList.add('active');
+  });
+}
+
+function renderResponse(answer, outputs) {
+  if (outputs.includes('text')) {
+    const el = document.getElementById('textAnswer');
+    el.textContent = answer;
+    el.classList.toggle('large-print', document.getElementById('largePrintToggle').checked);
+  }
+  if (outputs.includes('braille')) {
+    document.getElementById('brailleOutput').textContent = textToBraille(answer);
+    document.getElementById('dlBrailleBtn').style.display = 'inline-flex';
+  }
+  if (outputs.includes('audio')) {
+    document.getElementById('ttsTextPreview').textContent = answer;
+  }
+  if (outputs.includes('sign')) {
+    renderSign(answer.substring(0, 80));
+  }
+}
+
+function toggleLargePrint() {
+  document.getElementById('textAnswer').classList.toggle('large-print', document.getElementById('largePrintToggle').checked);
+}
+
+// ────────────────────────────────────────────────────────────
+// BRAILLE
+// ────────────────────────────────────────────────────────────
+const BRAILLE_BASE = 0x2800;
+const LETTER_MASKS = [1,3,9,25,17,11,27,19,10,26,5,7,13,29,21,15,31,23,14,30,69,71,90,77,93,85];
+const NUMBER_SIGN  = String.fromCodePoint(BRAILLE_BASE + 60);
+const CAPITAL_SIGN = String.fromCodePoint(BRAILLE_BASE + 32);
+const BRAILLE_SPACE = String.fromCodePoint(BRAILLE_BASE);
+
+function letterToBraille(ch) {
+  const idx = ch.toLowerCase().charCodeAt(0) - 97;
+  return (idx >= 0 && idx < 26) ? String.fromCodePoint(BRAILLE_BASE + LETTER_MASKS[idx]) : '?';
+}
+
+function textToBraille(text) {
+  let out = [], i = 0;
+  while (i < text.length) {
+    const ch = text[i];
+    if (/\s/.test(ch))    { out.push(BRAILLE_SPACE); i++; continue; }
+    if (/\d/.test(ch)) {
+      out.push(NUMBER_SIGN);
+      while (i < text.length && /\d/.test(text[i])) {
+        const d = text[i];
+        out.push(d === '0' ? letterToBraille('j') : letterToBraille(String.fromCharCode(96 + parseInt(d))));
+        i++;
+      }
+      continue;
+    }
+    if (/[a-zA-Z]/.test(ch)) {
+      if (ch === ch.toUpperCase()) out.push(CAPITAL_SIGN);
+      out.push(letterToBraille(ch));
+      i++; continue;
+    }
+    out.push('?'); i++;
+  }
+  return out.join('');
+}
+
+// ────────────────────────────────────────────────────────────
+// SIGN LANGUAGE
+// ────────────────────────────────────────────────────────────
+const HAND_SIGNS = {
+  A:'🤙',B:'✋',C:'🤏',D:'👆',E:'🖐',F:'👌',G:'👉',H:'🤞',
+  I:'🤙',J:'🤟',K:'✌',L:'🤙',M:'🤜',N:'✊',O:'👌',P:'👇',
+  Q:'👇',R:'🤞',S:'✊',T:'✋',U:'✌',V:'✌',W:'🤘',X:'👆',
+  Y:'🤙',Z:'👆',
+  '0':'👌','1':'☝','2':'✌','3':'🤟','4':'🖖','5':'✋',
+  '6':'🤙','7':'👇','8':'👈','9':'🤞'
+};
+let signAnimTimer = null;
+
+function renderSign(text) {
+  const display = document.getElementById('signDisplay');
+  if (signAnimTimer) clearInterval(signAnimTimer);
+  const chars = text.toUpperCase().split('');
+  let html = '<div class="sign-letter-show">';
+  chars.forEach((c, i) => {
+    const hand = HAND_SIGNS[c] || (c === ' ' ? '⬜' : '❓');
+    html += `<div class="sign-char-card" id="sign-${i}"><span class="char-hand">${hand}</span><span class="char-letter">${c === ' ' ? '·' : c}</span></div>`;
+  });
+  html += '</div>';
+  display.innerHTML = html;
+  let idx = 0;
+  signAnimTimer = setInterval(() => {
+    document.querySelectorAll('.sign-char-card').forEach(c => c.classList.remove('active-sign'));
+    const card = document.getElementById('sign-'+idx);
+    if (card) card.classList.add('active-sign');
+    idx++;
+    if (idx >= chars.length) { clearInterval(signAnimTimer); signAnimTimer = null; }
+  }, 600);
+}
+
+// ────────────────────────────────────────────────────────────
+// TTS
+// ────────────────────────────────────────────────────────────
+function playTTS() {
+  if (!currentAnswer) { showToast('⚠️ No answer to read yet'); return; }
+  if (speechSynth.speaking) { speechSynth.cancel(); updateTTSUI(false); return; }
+  const utter = new SpeechSynthesisUtterance(currentAnswer);
+  utter.rate = parseFloat(document.getElementById('speedSlider').value);
+  utter.lang = 'en-IN';
+  utter.onstart = () => updateTTSUI(true);
+  utter.onend = utter.onerror = () => updateTTSUI(false);
+  currentUtterance = utter;
+  speechSynth.speak(utter);
+}
+
+function updateTTSUI(playing) {
+  document.getElementById('ttsPlayBtn').textContent = playing ? '⏹' : '▶';
+  document.getElementById('ttsWaveform').classList.toggle('hidden', !playing);
+}
+
+// ────────────────────────────────────────────────────────────
+// UTILITIES
+// ────────────────────────────────────────────────────────────
+function copyAnswer() {
+  if (!currentAnswer) { showToast('Nothing to copy'); return; }
+  navigator.clipboard.writeText(currentAnswer).then(() => showToast('📋 Copied!')).catch(() => showToast('Copy failed'));
+}
+
+function downloadBraille() {
+  if (!currentAnswer) return;
+  const blob = new Blob([textToBraille(currentAnswer)], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'accesslearn_braille.txt'; a.click();
+  showToast('⬇️ Braille file downloaded');
+}
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior:'smooth' });
+}
+
+function showToast(msg, duration = 2600) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ────────────────────────────────────────────────────────────
+// ★ ON PAGE LOAD — check for saved session
+// ────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  loadFromStorage();
+});
+</script>
+</body>
+</html>
