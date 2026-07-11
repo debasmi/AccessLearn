@@ -173,15 +173,14 @@ def text_input_mode():
             break
         handle_question(question)
 
-# ---------------- MAIN ----------------
+
 def main():
     global stop_audio
-    # Start lecture audio immediately
+  
     audio_thread = threading.Thread(target=play_audio_continuous, daemon=True)
     audio_thread.start()
-    time.sleep(1)  # slight delay to ensure audio starts
+    time.sleep(1) 
 
-    # Ask mode after audio has started
     print("🎵 Lecture started.")
     print("Choose input mode:")
     print("1️⃣ Sign Language Mode (camera)")
@@ -191,9 +190,9 @@ def main():
     if mode == "2":
         text_input_mode()
     else:
-        # Stop audio and open camera for 10 seconds
+   
         ask_sign_language_question()
-        # Resume audio automatically
+        # Resume audio automatically after 10s
 
     stop_audio = True
     pygame.mixer.quit()
