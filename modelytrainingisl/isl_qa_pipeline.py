@@ -44,7 +44,7 @@ import torch.nn as nn
 # -----------------------------------------------------------------------------
 # GEMINI CONFIGURATION  — replace placeholder or pass --gemini_key
 # -----------------------------------------------------------------------------
-GEMINI_API_KEY_PLACEHOLDER = "YOUR_GEMINI_API_KEY_HERE"
+GEMINI_API_KEY_PLACEHOLDER = "ownapikey"
 GEMINI_MODEL               = "gemini-2.0-flash"
 GEMINI_ENDPOINT            = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
