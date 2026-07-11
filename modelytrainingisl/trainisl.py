@@ -2,21 +2,7 @@
 Indian Sign Language (ISL) Recognition - Training Pipeline
 ============================================================
 Uses MediaPipe Hand Landmarks + MLP Classifier (no GPU needed)
-Recognizes digits 0-9 and letters A-Z from your ISL dataset.
-
-Dataset structure expected:
-  Indian/
-    0/   -> images of digit 0
-    1/   -> images of digit 1
-    ...
-    A/   -> images of letter A
-    B/   -> images of letter B
-    ...
-
-Usage:
-  python isl_train.py --data_dir /path/to/Indian
 """
-
 import os
 import sys
 import json
@@ -36,36 +22,25 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# ── PyTorch imports ──────────────────────────────────────────────────────────
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
-# ── MediaPipe setup ──────────────────────────────────────────────────────────
+
 mp_hands = mp.solutions.hands
 hands_detector = mp_hands.Hands(
     static_image_mode=True,
     max_num_hands=1,
     min_detection_confidence=0.3,
 )
-
-# ── Constants ────────────────────────────────────────────────────────────────
 IMG_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 LANDMARK_FEATURES = 21 * 3       # 21 landmarks × (x, y, z)
 NORMALIZED_FEATURES = 21 * 2     # 21 landmarks × (x_norm, y_norm) after wrist-relative
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 1. Feature Extraction
-# ════════════════════════════════════════════════════════════════════════════
-
 def extract_landmarks(image_path: str) -> np.ndarray | None:
-    """
-    Extract hand landmark features from an image.
-    Returns a flat numpy array of shape (42,) or None if no hand detected.
-    Features are wrist-relative and normalized to [0,1] bounding box.
-    """
+   
     img = cv2.imread(image_path)
     if img is None:
         return None
@@ -80,7 +55,6 @@ def extract_landmarks(image_path: str) -> np.ndarray | None:
     xs = np.array([p.x for p in lm])
     ys = np.array([p.y for p in lm])
 
-    # Normalize: shift to wrist, scale by bounding box
     xs -= xs[0];  ys -= ys[0]
     span = max(xs.max() - xs.min(), ys.max() - ys.min(), 1e-6)
     xs /= span;   ys /= span
@@ -89,10 +63,7 @@ def extract_landmarks(image_path: str) -> np.ndarray | None:
 
 
 def build_dataset(data_dir: str):
-    """
-    Walk the dataset directory, extract features for every image.
-    Returns X (N, 42), y (N,) label strings.
-    """
+    
     X, y = [], []
     classes = sorted(os.listdir(data_dir))
 
@@ -117,10 +88,6 @@ def build_dataset(data_dir: str):
     print(f"\n✅  Extracted {len(X)} samples  |  ❌ Failed: {failed} (no hand detected)")
     return np.array(X, dtype=np.float32), np.array(y)
 
-
-# ════════════════════════════════════════════════════════════════════════════
-# 2. Model Definition
-# ════════════════════════════════════════════════════════════════════════════
 
 class ISLNet(nn.Module):
     """Lightweight MLP for landmark-based sign classification."""
@@ -148,11 +115,6 @@ class ISLNet(nn.Module):
 
     def forward(self, x):
         return self.net(x)
-
-
-# ════════════════════════════════════════════════════════════════════════════
-# 3. Training Loop
-# ════════════════════════════════════════════════════════════════════════════
 
 def train(model, loader, optimizer, criterion, device):
     model.train()
@@ -188,10 +150,6 @@ def evaluate(model, loader, criterion, device):
     return total_loss / total, correct / total, all_preds, all_true
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 4. Plotting
-# ════════════════════════════════════════════════════════════════════════════
-
 def plot_curves(history, save_path):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
     epochs = range(1, len(history["train_acc"]) + 1)
@@ -224,9 +182,6 @@ def plot_confusion(cm, class_names, save_path):
     print(f"📊  Confusion matrix saved → {save_path}")
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 5. Main
-# ════════════════════════════════════════════════════════════════════════════
 
 def main():
     parser = argparse.ArgumentParser(description="ISL Sign Language Trainer")
@@ -242,13 +197,13 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"🖥️   Device: {device}")
 
-    # ── Extract features ─────────────────────────────────────────────────────
+    # ──features ─────────────────────────────────────────────────────
     X, y_raw = build_dataset(args.data_dir)
     if len(X) == 0:
         print("❌  No samples extracted. Check your data_dir path.")
         sys.exit(1)
 
-    # ── Encode labels ─────────────────────────────────────────────────────────
+    # ── Encoding ─────────────────────────────────────────────────────────
     le = LabelEncoder()
     y = le.fit_transform(y_raw)
     num_classes = len(le.classes_)
@@ -265,7 +220,7 @@ def main():
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True)
     val_loader   = DataLoader(val_ds,   batch_size=args.batch_size)
 
-    # ── Build model ───────────────────────────────────────────────────────────
+    # ── model ───────────────────────────────────────────────────────────
     model = ISLNet(input_dim=NORMALIZED_FEATURES, num_classes=num_classes).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
@@ -299,7 +254,7 @@ def main():
 
     print(f"\n🏆  Best Val Accuracy: {best_val_acc:.4f}")
 
-    # ── Final evaluation ──────────────────────────────────────────────────────
+  
     model.load_state_dict(torch.load(best_model_path, map_location=device))
     _, _, preds, trues = evaluate(model, val_loader, criterion, device)
 
@@ -310,7 +265,7 @@ def main():
     plot_curves(history, os.path.join(args.output_dir, "training_curves.png"))
     plot_confusion(cm, le.classes_, os.path.join(args.output_dir, "confusion_matrix.png"))
 
-    # ── Save label encoder & config ───────────────────────────────────────────
+   
     with open(os.path.join(args.output_dir, "label_encoder.pkl"), "wb") as f:
         pickle.dump(le, f)
 
