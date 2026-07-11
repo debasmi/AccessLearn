@@ -1,13 +1,5 @@
 """
 Indian Sign Language (ISL) - Text to Sign with ANIMATED HAND GRAPHICS
-======================================================================
-Draws a real animated hand skeleton using MediaPipe landmarks —
-no raw images, just clean vector hand graphics rendered with OpenCV.
-
-Usage:
-  python isl_text_to_sign_graphics.py --data_dir "/path/to/Indian"
-  python isl_text_to_sign_graphics.py --data_dir "/path/to/Indian" --text "HELLO"
-  python isl_text_to_sign_graphics.py --data_dir "/path/to/Indian" --speed 1.5
 """
 
 import os
@@ -24,9 +16,9 @@ import mediapipe as mp
 
 mp_hands = mp.solutions.hands
 
-# ── Canvas config ─────────────────────────────────────────────────────────────
+
 W, H         = 720, 760
-HAND_W       = 460   # hand drawing area
+HAND_W       = 460  
 HAND_H       = 460
 HAND_X       = (W - HAND_W) // 2
 HAND_Y       = 60
@@ -34,7 +26,6 @@ PANEL_Y      = HAND_Y + HAND_H + 20
 
 IMG_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
-# ── Colors (BGR) ─────────────────────────────────────────────────────────────
 BG           = (18,  18,  24)
 PALM_COLOR   = (55,  55,  75)
 BONE_COLOR   = (100, 210, 180)
@@ -44,8 +35,6 @@ ACCENT       = (80,  200, 140)
 DIM          = (90,  90,  110)
 WHITE        = (240, 240, 240)
 SHADOW       = (35,  35,  50)
-
-# MediaPipe hand connection groups
 FINGER_CONNECTIONS = [
     # thumb
     [(0,1),(1,2),(2,3),(3,4)],
@@ -62,10 +51,6 @@ PALM_CONNECTIONS = [(0,5),(5,9),(9,13),(13,17),(0,17)]
 FINGERTIPS = [4, 8, 12, 16, 20]
 KNUCKLES   = [5, 9, 13, 17]
 
-
-# ════════════════════════════════════════════════════════════════════════════
-# 1. Extract landmarks from dataset images
-# ════════════════════════════════════════════════════════════════════════════
 
 def get_landmarks_for_sign(data_dir: str, char: str):
     """
@@ -88,7 +73,7 @@ def get_landmarks_for_sign(data_dir: str, char: str):
 
     with mp_hands.Hands(static_image_mode=True, max_num_hands=1,
                         min_detection_confidence=0.3) as hands:
-        for img_path in images[:10]:  # try up to 10
+        for img_path in images[:10]:
             img = cv2.imread(img_path)
             if img is None:
                 continue
@@ -117,11 +102,6 @@ def build_sign_landmark_index(data_dir: str) -> dict:
     print(f"\n\n✅  Landmark index built: {len(index)} signs\n")
     return index
 
-
-# ════════════════════════════════════════════════════════════════════════════
-# 2. Hand drawing engine
-# ════════════════════════════════════════════════════════════════════════════
-
 def landmarks_to_canvas_pts(landmarks, x0, y0, w, h, t=0.0):
     """
     Convert normalized mediapipe landmarks to pixel coords in the drawing area.
@@ -131,7 +111,7 @@ def landmarks_to_canvas_pts(landmarks, x0, y0, w, h, t=0.0):
     xs = np.array([p[0] for p in landmarks])
     ys = np.array([p[1] for p in landmarks])
 
-    # Center & scale to drawing area with margin
+   
     margin = 0.12
     xs = (xs - xs.min()) / (xs.max() - xs.min() + 1e-6)
     ys = (ys - ys.min()) / (ys.max() - ys.min() + 1e-6)
@@ -139,7 +119,6 @@ def landmarks_to_canvas_pts(landmarks, x0, y0, w, h, t=0.0):
     px = (xs * (1 - 2*margin) + margin) * w + x0
     py = (ys * (1 - 2*margin) + margin) * h + y0
 
-    # Gentle idle float
     float_y = np.sin(t * 1.8) * 6
     float_x = np.cos(t * 0.9) * 3
     px += float_x
@@ -163,24 +142,23 @@ def draw_shadow_hand(canvas, px, py, alpha=0.4):
 def draw_hand(canvas, px, py, t=0.0, glow_phase=0.0):
     """Draw a stylized vector hand skeleton."""
 
-    # ── Shadow ────────────────────────────────────────────────────────────
+    
     draw_shadow_hand(canvas, px, py)
 
-    # ── Palm fill (convex hull of palm points) ────────────────────────────
+    
     palm_pts = np.array([[px[i], py[i]] for i in [0, 1, 5, 9, 13, 17]], dtype=np.int32)
     hull = cv2.convexHull(palm_pts)
     cv2.fillConvexPoly(canvas, hull, PALM_COLOR)
     cv2.polylines(canvas, [hull], True, BONE_COLOR, 2, cv2.LINE_AA)
 
-    # ── Finger bones ──────────────────────────────────────────────────────
+   
     for finger_idx, finger in enumerate(FINGER_CONNECTIONS):
         for seg_idx, (a, b) in enumerate(finger):
-            # Taper thickness from base to tip
+          
             thickness = max(2, 9 - seg_idx * 2)
             color = BONE_COLOR
             cv2.line(canvas, (px[a], py[a]), (px[b], py[b]), color, thickness, cv2.LINE_AA)
 
-    # ── Joints ────────────────────────────────────────────────────────────
     for i in range(21):
         if i in FINGERTIPS:
             # Animated glowing fingertips
@@ -199,15 +177,11 @@ def draw_hand(canvas, px, py, t=0.0, glow_phase=0.0):
             cv2.circle(canvas, (px[i], py[i]), 5, JOINT_COLOR, -1, cv2.LINE_AA)
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 3. Full frame renderer
-# ════════════════════════════════════════════════════════════════════════════
 
 def render_frame(landmarks, char, position, total, full_text, t, glow_phase, transition=1.0):
     """Render one animation frame."""
     canvas = np.full((H, W, 3), BG, dtype=np.uint8)
 
-    # ── Background grid (subtle) ──────────────────────────────────────────
     grid_color = (28, 28, 36)
     for gx in range(0, W, 40):
         cv2.line(canvas, (gx, 0), (gx, H), grid_color, 1)
@@ -307,7 +281,7 @@ def render_space_frame(position, total, full_text, t):
     for gx in range(0, W, 40): cv2.line(canvas, (gx, 0), (gx, H), grid_color, 1)
     for gy in range(0, H, 40): cv2.line(canvas, (0, gy), (W, gy), grid_color, 1)
 
-    # Animated word-break indicator
+
     for i in range(5):
         alpha = abs(np.sin(t * 2 + i * 0.7))
         x = W//2 - 80 + i * 40
@@ -347,10 +321,6 @@ def render_done_frame(full_text):
     return canvas
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 4. Animation loop
-# ════════════════════════════════════════════════════════════════════════════
-
 def show_text_as_signs(text: str, sign_index: dict, speed: float):
     text_upper = text.upper()
     chars = list(text_upper)
@@ -386,7 +356,6 @@ def show_text_as_signs(text: str, sign_index: dict, speed: float):
         sign_pos += 1
         landmarks = sign_index.get(char)
 
-        # Animate for `speed` seconds
         start = time.time()
         while True:
             elapsed = time.time() - start
@@ -394,7 +363,7 @@ def show_text_as_signs(text: str, sign_index: dict, speed: float):
                 break
 
             t = time.time()
-            transition = min(1.0, elapsed / 0.2)   # 200ms fade-in
+            transition = min(1.0, elapsed / 0.2)   
             glow_phase = t * 3.0
 
             frame = render_frame(
@@ -413,15 +382,11 @@ def show_text_as_signs(text: str, sign_index: dict, speed: float):
 
         i += 1
 
-    # End screen
     cv2.imshow(window, render_done_frame(text_upper))
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
-# ════════════════════════════════════════════════════════════════════════════
-# 5. Main
-# ════════════════════════════════════════════════════════════════════════════
 
 def main():
     parser = argparse.ArgumentParser(description="ISL Text → Animated Sign Graphics")
