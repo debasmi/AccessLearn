@@ -9,16 +9,12 @@ from pydub import AudioSegment
 import tempfile
 from braille import text_to_braille
 
-# 🔑 Configure Gemini API
+
 genai.configure(api_key="ownapikey")
 
 AUDIO_FILE = "/Users/debasmibasu/Documents/SIS/blind user/lecture1audio.wav"
-
-# Initialize pygame mixer
 pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=512)
 pygame.mixer.init()
-
-# Global state
 is_playing = False
 paused = False
 stop_audio = False
@@ -30,7 +26,7 @@ playback_start_time = 0
 # ============================================================================
 # FONT DISPLAY SETTINGS - Based on Accessibility Guidelines
 # ============================================================================
-# Using sans serif font recommendations from the document:
+
 # - Arial, Verdana, Tahoma are recommended sans serif fonts
 # - Minimum 11-12pt for standard print
 # - 16pt+ for large print accessibility
@@ -49,19 +45,16 @@ def format_for_display(text: str, large_print: bool = False) -> str:
         Formatted text string with appropriate spacing
     """
     if large_print:
-        # For large print: add extra line spacing and character spacing
-        # Simulates 16pt+ font with better readability
+        
         lines = text.split('\n')
         formatted_lines = []
         for line in lines:
-            # Add space between characters for better distinction
+          
             spaced_line = ' '.join(line)
             formatted_lines.append(spaced_line)
-            formatted_lines.append('')  # Extra line break
+            formatted_lines.append('') 
         return '\n'.join(formatted_lines)
-    else:
-        # Standard print format with consistent spacing
-        return text
+    else:        return text
 
 
 def print_accessible_header(text: str, large_print: bool = False):
@@ -86,9 +79,7 @@ def print_accessible_section(label: str, content: str, large_print: bool = False
     print("-" * 80 if not large_print else "- " * 40)
 
 
-# ============================================================================
-# AUDIO PLAYER CLASS
-# ============================================================================
+
 
 class AudioPlayer:
     def __init__(self, audio_file):
@@ -144,11 +135,6 @@ class AudioPlayer:
     def get_duration_ms(self):
         """Get total audio duration in milliseconds"""
         return len(self.full_audio) if self.full_audio else 0
-
-
-# ============================================================================
-# AUDIO PLAYBACK CONTROL
-# ============================================================================
 
 def play_audio():
     """Plays the audio file with proper pause/resume from timestamp functionality."""
@@ -212,10 +198,6 @@ def play_audio():
         time.sleep(0.1)
 
 
-# ============================================================================
-# GEMINI AI INTEGRATION
-# ============================================================================
-
 def ask_gemini(question: str) -> str:
     """Sends question to Gemini API and returns the response text."""
     try:
@@ -260,12 +242,6 @@ def speak_text(text: str, answer_speed: float = 1.5):
             pass
     except Exception as e:
         print(f"❌ Error with text-to-speech: {e}")
-
-
-# ============================================================================
-# QUESTION HANDLING WITH ACCESSIBLE DISPLAY
-# ============================================================================
-
 def handle_question(question: str, large_print: bool = False):
     """
     Process question: get Gemini answer, convert to Braille, save, and speak.
@@ -273,18 +249,12 @@ def handle_question(question: str, large_print: bool = False):
     """
     print_accessible_header(f"Question: {question}", large_print)
     
-    # Get answer from Gemini
+    
     print("🤖 Getting answer from Gemini...\n")
     answer = ask_gemini(question)
-    
-    # Display answer with accessible formatting
     print_accessible_section("💡 ANSWER", answer, large_print)
-    
-    # Convert to Braille
     braille_output = text_to_braille(answer)
     print_accessible_section("⠿ BRAILLE REPRESENTATION", braille_output, large_print)
-    
-    # Save Braille to timestamped file
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     filename = f"gemini_answer_{timestamp}.braille.txt"
     with open(filename, "w", encoding="utf-8") as f:
@@ -298,9 +268,6 @@ def handle_question(question: str, large_print: bool = False):
     time.sleep(2)
 
 
-# ============================================================================
-# VOICE COMMAND LISTENER
-# ============================================================================
 
 def listen_for_commands(large_print: bool = False):
     """Continuously listens for voice commands."""
@@ -374,10 +341,6 @@ def listen_for_commands(large_print: bool = False):
             time.sleep(1)
 
 
-# ============================================================================
-# TEXT INPUT MODE
-# ============================================================================
-
 def text_input_mode(large_print: bool = False):
     """Allows user to type questions instead of speaking."""
     global stop_audio
@@ -394,9 +357,6 @@ def text_input_mode(large_print: bool = False):
             handle_question(question, large_print)
 
 
-# ============================================================================
-# MAIN FUNCTION
-# ============================================================================
 
 def main():
     """Main function to start the application"""
