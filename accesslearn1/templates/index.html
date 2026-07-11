@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AudioVisual — Inclusive AI Learning Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0a0f;--surface:#111118;--card:#16161f;--border:rgba(255,255,255,0.07);
+  --blue:#4f8ef7;--violet:#9b59f5;--green:#2ecc9a;--amber:#f5a623;--rose:#f05c7a;
+  --text:#e8e8f0;--muted:#7070a0;
+  --ff-display:'Syne',sans-serif;--ff-body:'Space Grotesk',sans-serif;--ff-mono:'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--ff-body);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0}
+.g1,.g2,.g3{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+.g1{width:600px;height:600px;top:-200px;left:-200px;background:radial-gradient(circle,rgba(79,142,247,.08),transparent)}
+.g2{width:500px;height:500px;bottom:-100px;right:-100px;background:radial-gradient(circle,rgba(155,89,245,.08),transparent)}
+.g3{width:400px;height:400px;top:40%;left:40%;background:radial-gradient(circle,rgba(46,204,154,.05),transparent)}
+.app{position:relative;z-index:1;display:grid;grid-template-rows:auto 1fr;min-height:100vh}
+
+/* Header */
+header{padding:18px 28px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);backdrop-filter:blur(20px);
+  background:rgba(10,10,15,.85);position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--blue),var(--violet));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-family:var(--ff-display);font-size:20px;font-weight:800;letter-spacing:-.5px}
+.logo-text span{color:var(--blue)}
+.hdr-caps{display:flex;gap:8px}
+.cap-pill{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid;font-weight:600}
+.cap-ok{color:var(--green);border-color:rgba(46,204,154,.3);background:rgba(46,204,154,.08)}
+.cap-no{color:var(--rose);border-color:rgba(240,92,122,.3);background:rgba(240,92,122,.08)}
+.status-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);
+  background:rgba(255, 255, 255, 0);padding:6px 14px;border-radius:20px;border:1px solid var(--border)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Layout */
+main{display:grid;grid-template-columns:250px 1fr 280px;height:calc(100vh - 68px)}
+
+/* Sidebar */
+.sidebar{border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:6px;
+  overflow-y:auto;background:rgba(17,17,24,.6)}
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);
+  padding:4px 10px 6px;font-weight:600}
+.mode-btn{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;
+  border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;
+  transition:all .2s;text-align:left;width:100%;font-family:var(--ff-body);font-size:13px}
+.mode-btn:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.mode-btn.active{background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.3);color:var(--text)}
+.mode-btn .icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.mode-btn[data-m="blind"] .icon{background:rgba(79,142,247,.15)}
+.mode-btn[data-m="partial"] .icon{background:rgba(155,89,245,.15)}
+.mode-btn[data-m="deaf"] .icon{background:rgba(46,204,154,.15)}
+.mode-btn[data-m="mute"] .icon{background:rgba(245,166,35,.15)}
+.mode-btn .mname{font-weight:600;font-size:13px}
+.mode-btn .mdesc{font-size:11px;color:var(--muted);margin-top:1px}
+.sb-sep{height:1px;background:var(--border);margin:6px 0}
+
+/* Upload */
+.upload-area{border:2px dashed rgba(79,142,247,.3);border-radius:10px;padding:16px;
+  text-align:center;cursor:pointer;transition:all .2s;background:rgba(79,142,247,.03)}
+.upload-area:hover{border-color:rgba(79,142,247,.6);background:rgba(79,142,247,.06)}
+.upload-area p{font-size:12px;color:var(--muted);margin-top:6px}
+.upload-area strong{color:var(--blue)}
+#fileInput{display:none}
+.audio-loaded{font-size:12px;color:var(--green);text-align:center;padding:8px;
+  background:rgba(46,204,154,.08);border-radius:8px;border:1px solid rgba(46,204,154,.2)}
+
+/* Content */
+.content{display:flex;flex-direction:column;overflow:hidden}
+.mode-panel{display:none;flex-direction:column;flex:1;overflow:hidden;animation:fadeIn .3s}
+.mode-panel.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Panel header */
+.ph{padding:22px 26px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between}
+.ph-title{font-family:var(--ff-display);font-size:21px;font-weight:700;letter-spacing:-.5px}
+.ph-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;flex-shrink:0}
+.bd-blue{background:rgba(79,142,247,.12);color:var(--blue);border:1px solid rgba(79,142,247,.25)}
+.bd-violet{background:rgba(155,89,245,.12);color:var(--violet);border:1px solid rgba(155,89,245,.25)}
+.bd-green{background:rgba(46,204,154,.12);color:var(--green);border:1px solid rgba(46,204,154,.25)}
+.bd-amber{background:rgba(245,166,35,.12);color:var(--amber);border:1px solid rgba(245,166,35,.25)}
+
+/* Panel body */
+.pb{flex:1;overflow-y:auto;padding:20px 26px;display:flex;flex-direction:column;gap:16px}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.ct{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;
+  margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.ct::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Audio player */
+.aplayer{background:linear-gradient(135deg,rgba(79,142,247,.08),rgba(155,89,245,.05));
+  border:1px solid rgba(79,142,247,.2);border-radius:12px;padding:18px}
+.afi{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.afi-icon{width:38px;height:38px;border-radius:9px;background:rgba(79,142,247,.15);
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.afi-name{font-weight:600;font-size:14px}
+.afi-meta{font-size:11px;color:var(--muted)}
+.progress-wrap{margin:10px 0}
+.progress-track{height:5px;background:rgba(255,255,255,.08);border-radius:4px;cursor:pointer;position:relative}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:4px;width:0%;transition:width .5s}
+.prog-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-family:var(--ff-mono);margin-top:5px}
+.actrls{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px}
+.cb{display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;border-radius:50%;transition:all .2s;font-size:14px}
+.cb.sm{width:34px;height:34px;background:rgba(255,255,255,.06);color:var(--muted)}
+.cb.sm:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.cb.pr{width:46px;height:46px;background:var(--blue);color:#fff;font-size:18px;box-shadow:0 4px 18px rgba(79,142,247,.4)}
+.cb.pr:hover{transform:scale(1.06);box-shadow:0 6px 22px rgba(79,142,247,.5)}
+
+/* Voice */
+.voice-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.02);
+  border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted)}
+.mic-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.5s infinite;flex-shrink:0}
+.mic-dot.off{background:var(--muted);box-shadow:none;animation:none}
+.waveform{display:flex;align-items:center;gap:3px;height:32px}
+.wb{width:3px;border-radius:2px;background:var(--blue);animation:wave 1s ease-in-out infinite}
+.wb:nth-child(2n){animation-delay:.1s}.wb:nth-child(3n){animation-delay:.2s}.wb:nth-child(4n){animation-delay:.3s}
+@keyframes wave{0%,100%{height:4px}50%{height:24px}}
+.waveform.off .wb{animation:none;height:4px;opacity:.2}
+.kbd{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:4px;
+  padding:2px 7px;font-size:11px;font-family:var(--ff-mono)}
+
+/* Q&A messages */
+.qa-msgs{display:flex;flex-direction:column;gap:10px;min-height:80px;max-height:200px;overflow-y:auto;padding:2px 0}
+.msg{display:flex;gap:8px;animation:fadeIn .3s}
+.msg-av{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.msg.user .msg-av{background:rgba(79,142,247,.2)}.msg.ai .msg-av{background:rgba(155,89,245,.2)}
+.msg-bubble{flex:1;border-radius:9px;padding:9px 12px;font-size:13px;line-height:1.6;border:1px solid var(--border)}
+.msg.user .msg-bubble{background:rgba(79,142,247,.08);border-color:rgba(79,142,247,.2)}
+.msg.ai   .msg-bubble{background:rgba(155,89,245,.06);border-color:rgba(155,89,245,.15)}
+
+/* Input row */
+.input-row{display:flex;gap:8px;margin-top:8px}
+.ti{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;
+  padding:10px 13px;color:var(--text);font-family:var(--ff-body);font-size:13px;outline:none;transition:border-color .2s}
+.ti:focus{border-color:rgba(79,142,247,.4)}
+.ti::placeholder{color:var(--muted)}
+.sbtn{border:none;border-radius:9px;padding:10px 16px;cursor:pointer;font-family:var(--ff-body);font-weight:600;font-size:13px;transition:all .2s}
+.sbtn:hover{opacity:.85;transform:translateY(-1px)}
+
+/* Braille */
+.braille-out{background:#0d0d14;border:1px solid rgba(79,142,247,.15);border-radius:9px;
+  padding:14px;font-family:var(--ff-mono);font-size:20px;line-height:1.6;color:var(--blue);
+  letter-spacing:3px;min-height:70px;word-break:break-all;overflow-y:auto;max-height:110px}
+
+/* Large text */
+.large-text{background:rgba(155,89,245,.06);border:1px solid rgba(155,89,245,.2);border-radius:10px;
+  padding:18px;font-size:20px;font-weight:500;line-height:1.7;min-height:90px}
+
+/* Camera */
+.cam-wrap{border-radius:10px;overflow:hidden;background:#070710;border:1px solid var(--border);
+  aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative}
+.cam-ph{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--muted)}
+.cam-ph .ci{font-size:36px;opacity:.4}
+.cam-ph .cs{font-size:12px}
+.live-badge{position:absolute;top:9px;right:9px;background:rgba(240,92,122,.9);color:#fff;
+  font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;text-transform:uppercase;
+  letter-spacing:.5px;display:none}
+.live-badge.on{display:block;animation:pulse 1s infinite}
+
+/* Sign grid */
+.sign-grid{display:flex;flex-wrap:wrap;gap:6px}
+.sc{width:48px;height:58px;background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:all .2s}
+.sc.hi{background:rgba(46,204,154,.12);border-color:rgba(46,204,154,.4)}
+.sc .ltr{font-family:var(--ff-display);font-size:16px;font-weight:700}
+.sc .ges{font-size:18px}
+
+/* Speed */
+.speed-ctrl{display:flex;align-items:center;gap:10px}
+input[type=range].sr{flex:1;-webkit-appearance:none;height:4px;background:rgba(255,255,255,.08);border-radius:4px;outline:none}
+input[type=range].sr::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--blue);cursor:pointer;box-shadow:0 0 5px rgba(79,142,247,.5)}
+
+/* Right panel */
+.rpanel{border-left:1px solid var(--border);display:flex;flex-direction:column;background:rgba(17,17,24,.4);overflow-y:auto}
+.rs{padding:18px;border-bottom:1px solid var(--border)}
+.rs-title{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;margin-bottom:12px}
+.stat-row{display:flex;gap:7px;margin-bottom:7px}
+.stat-box{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:9px;text-align:center}
+.sv{font-family:var(--ff-display);font-size:19px;font-weight:700;color:var(--blue)}
+.sl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.feat-pills{display:flex;flex-direction:column;gap:6px}
+.fp{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:12px}
+.fp.on{border-color:rgba(46,204,154,.3);background:rgba(46,204,154,.06)}
+.fp .pi{font-size:14px;flex-shrink:0}.fp .pl{flex:1;font-weight:500}
+.ptog{width:26px;height:15px;background:rgba(255,255,255,.1);border-radius:10px;position:relative;cursor:pointer;transition:background .2s;border:none;flex-shrink:0}
+.ptog::after{content:'';position:absolute;width:11px;height:11px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s}
+.ptog.on{background:var(--green)}.ptog.on::after{transform:translateX(11px)}
+.file-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.03);
+  border:1px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer;transition:background .2s}
+.file-item:hover{background:rgba(255,255,255,.06)}
+
+/* Toast */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--card);border:1px solid var(--border);border-radius:9px;padding:11px 18px;
+  font-size:13px;display:flex;align-items:center;gap:9px;z-index:999;
+  transition:transform .3s ease;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* Spinner */
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(155,89,245,.3);
+  border-top-color:var(--violet);border-radius:50%;animation:spinr .7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spinr{to{transform:rotate(360deg)}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px}
+</style>
+</head>
+<body>
+<div class="g1"></div><div class="g2"></div><div class="g3"></div>
+
+<div class="app">
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">♿</div>
+    <div class="logo-text">Audio<span>Visual</span></div>
+  </div>
+  <div class="hdr-caps" id="capBadges"></div>
+  <div class="status-badge"><div class="dot"></div>Gemini 2.5 Flash · Live</div>
+</header>
+
+<main>
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div class="sb-label">User Profile</div>
+
+  <button class="mode-btn active" data-m="blind" onclick="switchMode('blind')">
+    <div class="icon">🦯</div>
+    <div><div class="mname">Blind User</div><div class="mdesc">Voice + Braille + TTS</div></div>
+  </button>
+  <button class="mode-btn" data-m="partial" onclick="switchMode('partial')">
+    <div class="icon">👁️</div>
+    <div><div class="mname">Partially Sighted</div><div class="mdesc">Large text + Camera</div></div>
+  </button>
+  <button class="mode-btn" data-m="deaf" onclick="switchMode('deaf')">
+    <div class="icon">🤟</div>
+    <div><div class="mname">Deaf User</div><div class="mdesc">Sign detection + Text Q&A</div></div>
+  </button>
+  <button class="mode-btn" data-m="mute" onclick="switchMode('mute')">
+    <div class="icon">🔇</div>
+    <div><div class="mname">Mute User</div><div class="mdesc">Sign output + Text input</div></div>
+  </button>
+
+  <div class="sb-sep"></div>
+  <div class="sb-label">Lecture Audio</div>
+
+  <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+    <div style="font-size:26px">🎵</div>
+    <p><strong>Click to upload</strong><br>WAV or MP3 lecture file</p>
+  </div>
+  <input type="file" id="fileInput" accept=".wav,.mp3" onchange="uploadAudio(this)"/>
+  <div id="audioLoaded" style="display:none" class="audio-loaded"></div>
+</nav>
+
+<!-- ── Panels ── -->
+<div class="content">
+
+  <!-- ════════════════════ BLIND ════════════════════ -->
+  <div class="mode-panel active" id="panel-blind">
+    <div class="ph">
+      <div><div class="ph-title">🦯 Blind User Mode</div>
+        <div class="ph-sub">Voice-controlled · Gemini answers spoken aloud · Braille output</div></div>
+      <div class="badge bd-blue" id="blind-badge">Voice Ready</div>
+    </div>
+    <div class="pb">
+
+      <!-- Audio player -->
+      <div class="aplayer">
+        <div class="afi">
+          <div class="afi-icon">🎧</div>
+          <div><div class="afi-name" id="b-fname">No file loaded</div>
+               <div class="afi-meta" id="b-fmeta">Upload a lecture to begin</div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-track" id="b-track" onclick="seekAudio(event,this)">
+            <div class="progress-fill" id="b-prog"></div>
+          </div>
+          <div class="prog-labels"><span id="b-cur">0:00</span><span id="b-dur">0:00</span></div>
+        </div>
+        <div class="actrls">
+          <button class="cb sm" onclick="seekRel(-10000)">⏪</button>
+          <button class="cb pr" id="b-playbtn" onclick="togglePlay('blind')">▶</button>
+          <button class="cb sm" onclick="seekRel(10000)">⏩</button>
+        </div>
+      </div>
+
+      <!-- Voice control -->
+      <div class="card">
+        <div class="ct">🎤 Voice Command</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+          <div class="waveform" id="b-wave">
+            <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+            <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+            <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+            <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+          </div>
+          <div class="voice-row" style="flex:1">
+            <div class="mic-dot off" id="b-mic"></div>
+            <span id="b-vstat">Click Start Voice to enable microphone</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <span style="font-size:12px;color:var(--muted)">Say:</span>
+          <span class="kbd">pause</span><span class="kbd">ask</span>
+          <span class="kbd">play</span><span class="kbd">resume</span><span class="kbd">quit</span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="startVoice()" style="flex:1;background:rgba(79,142,247,.15);color:var(--blue);border:1px solid rgba(79,142,247,.3);border-radius:8px;padding:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--ff-body)">▶ Start Voice</button>
+          <button onclick="stopVoice()" style="flex:1;background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--ff-body)">⏹ Stop Voice</button>
+        </div>
+      </div>
+
+      <!-- Q&A -->
+      <div class="card">
+        <div class="ct">🤖 Q&A</div>
+        <div class="qa-msgs" id="b-msgs">
+          <div class="msg ai"><div class="msg-av">🤖</div>
+            <div class="msg-bubble">Say <strong>"pause"</strong> to ask a question, or type below.</div></div>
+        </div>
+        <div class="input-row">
+          <input class="ti" id="b-inp" placeholder="Type question…" onkeydown="if(event.key==='Enter')sendQ('blind')"/>
+          <button class="sbtn" style="background:var(--blue);color:#fff" onclick="sendQ('blind')">Ask</button>
+        </div>
+      </div>
+
+      <!-- Braille output -->
+      <div class="card">
+        <div class="ct">⠿ Braille Output</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:7px;font-family:var(--ff-mono)">Grade 1 Unicode Braille · auto-saved</div>
+        <div class="braille-out" id="b-braille">⠠⠓⠑⠇⠇⠕⠀⠡⠀⠁⠍⠀⠗⠑⠁⠙⡝⠀⠞⠕⠀⠓⠑⠇⠏</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px">
+          <span style="font-size:11px;color:var(--muted)" id="b-bfile">—</span>
+          <button onclick="downloadBraille()" style="background:rgba(79,142,247,.15);color:var(--blue);border:1px solid rgba(79,142,247,.3);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:var(--ff-body)">⬇ Download</button>
+        </div>
+      </div>
+
+      <!-- TTS speed -->
+      <div class="card">
+        <div class="ct">🔊 TTS Speed</div>
+        <div class="speed-ctrl">
+          <span style="font-size:11px;color:var(--muted)">0.5×</span>
+          <input type="range" class="sr" min="5" max="30" value="15" id="speed-slider" oninput="setSpeed(this)"/>
+          <span style="font-size:11px;color:var(--muted)">3.0×</span>
+          <span style="font-family:var(--ff-mono);font-size:12px;color:var(--blue);min-width:30px" id="speed-lbl">1.5×</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════ PARTIAL ════════════════════ -->
+  <div class="mode-panel" id="panel-partial">
+    <div class="ph">
+      <div><div class="ph-title">👁️ Partially Sighted Mode</div>
+        <div class="ph-sub">Large text · High contrast · Camera sign detection · Voice or text Q&A</div></div>
+      <div class="badge bd-violet">Enhanced Vision</div>
+    </div>
+    <div class="pb">
+
+      <div class="aplayer" style="background:linear-gradient(135deg,rgba(155,89,245,.08),rgba(79,142,247,.05));border-color:rgba(155,89,245,.2)">
+        <div class="afi">
+          <div class="afi-icon" style="background:rgba(155,89,245,.15)">🎧</div>
+          <div><div class="afi-name" id="p-fname">No file loaded</div>
+               <div class="afi-meta" id="p-fmeta" style="font-size:14px">Upload a lecture to begin</div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-track" style="height:8px" id="p-track" onclick="seekAudio(event,this,'partial')">
+            <div class="progress-fill" id="p-prog" style="background:linear-gradient(90deg,var(--violet),var(--blue))"></div>
+          </div>
+        </div>
+        <div class="actrls">
+          <button class="cb sm" style="width:42px;height:42px;font-size:17px" onclick="seekRel(-10000)">⏪</button>
+          <button class="cb pr" id="p-playbtn" style="width:52px;height:52px;font-size:22px;background:var(--violet);box-shadow:0 4px 18px rgba(155,89,245,.4)" onclick="togglePlay('partial')">▶</button>
+          <button class="cb sm" style="width:42px;height:42px;font-size:17px" onclick="seekRel(10000)">⏩</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ct">📝 Answer (Large Text)</div>
+        <div class="large-text" id="p-answer">Ask a question — the answer will appear here in large text.</div>
+      </div>
+
+      <div class="card">
+        <div class="ct">🤖 Ask Gemini</div>
+        <div class="input-row">
+          <input class="ti" id="p-inp" placeholder="Type your question…" style="font-size:16px;padding:13px 15px" onkeydown="if(event.key==='Enter')sendQ('partial')"/>
+          <button class="sbtn" style="background:var(--violet);color:#fff;font-size:16px;padding:13px 18px" onclick="sendQ('partial')">Ask</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ct">📷 Sign Language Camera</div>
+        <div class="cam-wrap" id="p-cam">
+          <div class="cam-ph"><div class="ci">📹</div><div class="cs">Camera inactive</div></div>
+          <div class="live-badge" id="p-livebadge">LIVE</div>
+        </div>
+        <button onclick="startSign(10)" style="margin-top:10px;width:100%;background:rgba(155,89,245,.15);color:var(--violet);border:1px solid rgba(155,89,245,.3);border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--ff-body)">
+          📷 Start Sign Detection (10s)
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════ DEAF ════════════════════ -->
+  <div class="mode-panel" id="panel-deaf">
+    <div class="ph">
+      <div><div class="ph-title">🤟 Deaf User Mode</div>
+        <div class="ph-sub">Sign language input · Text Q&A · Visual lecture captions</div></div>
+      <div class="badge bd-green">Visual Mode</div>
+    </div>
+    <div class="pb">
+
+      <div class="card">
+        <div class="ct">📷 Sign Language Input (MediaPipe · 10s window)</div>
+        <div style="display:grid;grid-template-columns:1fr 130px;gap:14px;align-items:start">
+          <div class="cam-wrap" style="aspect-ratio:4/3" id="d-cam">
+            <div class="cam-ph">
+              <div style="font-size:40px">✋</div>
+              <div class="cs">Press Start to open camera</div>
+            </div>
+            <div class="live-badge" id="d-livebadge">LIVE</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Detected</div>
+            <div id="d-detected" style="background:rgba(46,204,154,.08);border:1px solid rgba(46,204,154,.25);
+              border-radius:8px;padding:11px;font-family:var(--ff-mono);font-size:14px;color:var(--green);
+              min-height:70px;display:flex;align-items:center;justify-content:center;text-align:center">—</div>
+            <button onclick="startSign(10,'deaf')" style="background:rgba(46,204,154,.15);color:var(--green);
+              border:1px solid rgba(46,204,154,.3);border-radius:8px;padding:9px;font-size:13px;
+              font-weight:600;cursor:pointer;font-family:var(--ff-body)">▶ Start (10s)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ct">💬 Text Q&A</div>
+        <div class="qa-msgs" id="d-msgs">
+          <div class="msg ai"><div class="msg-av">🤖</div>
+            <div class="msg-bubble">Start sign detection or type a question below.</div></div>
+        </div>
+        <div class="input-row" style="margin-top:10px">
+          <input class="ti" id="d-inp" placeholder="Type question…" onkeydown="if(event.key==='Enter')sendQ('deaf')"/>
+          <button class="sbtn" style="background:var(--green);color:#000" onclick="sendQ('deaf')">Send</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════ MUTE ════════════════════ -->
+  <div class="mode-panel" id="panel-mute">
+    <div class="ph">
+      <div><div class="ph-title">🔇 Mute User Mode</div>
+        <div class="ph-sub">Text input · Answers shown as sign language alphabet + audio lecture</div></div>
+      <div class="badge bd-amber">Sign Output</div>
+    </div>
+    <div class="pb">
+
+      <div class="aplayer" style="background:linear-gradient(135deg,rgba(245,166,35,.08),rgba(79,142,247,.04));border-color:rgba(245,166,35,.2)">
+        <div class="afi">
+          <div class="afi-icon" style="background:rgba(245,166,35,.15)">🎧</div>
+          <div><div class="afi-name" id="m-fname">No file loaded</div>
+               <div class="afi-meta" id="m-fmeta">Upload a lecture to begin</div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-track" id="m-track" onclick="seekAudio(event,this,'mute')">
+            <div class="progress-fill" id="m-prog" style="background:linear-gradient(90deg,var(--amber),#f07223)"></div>
+          </div>
+          <div class="prog-labels"><span id="m-cur">0:00</span><span id="m-dur">0:00</span></div>
+        </div>
+        <div class="actrls">
+          <button class="cb sm" onclick="seekRel(-10000)">⏪</button>
+          <button class="cb pr" id="m-playbtn" style="background:var(--amber);box-shadow:0 4px 18px rgba(245,166,35,.4)" onclick="togglePlay('mute')">▶</button>
+          <button class="cb sm" onclick="seekRel(10000)">⏩</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ct">⌨️ Your Question</div>
+        <div class="input-row">
+          <input class="ti" id="m-inp" placeholder="Type your question here…" onkeydown="if(event.key==='Enter')sendQ('mute')"/>
+          <button class="sbtn" style="background:var(--amber);color:#000" onclick="sendQ('mute')">Ask</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ct">💡 Answer</div>
+        <div id="m-answer" style="font-size:14px;line-height:1.7;min-height:50px">Your answer will appear here.</div>
+      </div>
+
+      <div class="card">
+        <div class="ct">🤟 Sign Language Display</div>
+        <div id="m-sign-sub" style="font-size:12px;color:var(--muted);margin-bottom:10px">Sign alphabet will animate below for the answer.</div>
+        <div class="sign-grid" id="sign-grid"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<!-- ── Right panel ── -->
+<div class="rpanel">
+  <div class="rs">
+    <div class="rs-title">Session Stats</div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="sv" id="st-q">0</div><div class="sl">Asked</div></div>
+      <div class="stat-box"><div class="sv" style="color:var(--green)" id="st-a">0</div><div class="sl">Answered</div></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="sv" style="color:var(--violet)" id="st-br">0</div><div class="sl">Braille</div></div>
+      <div class="stat-box"><div class="sv" style="color:var(--amber)" id="st-tts">0</div><div class="sl">Audio</div></div>
+    </div>
+  </div>
+  <div class="rs">
+    <div class="rs-title">Features</div>
+    <div class="feat-pills">
+      <div class="fp on"><span class="pi">🔊</span><span class="pl">Text-to-Speech</span><button class="ptog on" id="tog-tts" onclick="toggleFeat(this)"></button></div>
+      <div class="fp on"><span class="pi">⠿</span><span class="pl">Braille Output</span><button class="ptog on" id="tog-braille" onclick="toggleFeat(this)"></button></div>
+      <div class="fp on"><span class="pi">🎤</span><span class="pl">Voice Commands</span><button class="ptog on" id="tog-voice" onclick="toggleFeat(this)"></button></div>
+      <div class="fp"><span class="pi">📷</span><span class="pl">Camera/Sign In</span><button class="ptog" id="tog-camera" onclick="toggleFeat(this)"></button></div>
+      <div class="fp on"><span class="pi">🤟</span><span class="pl">Sign Output</span><button class="ptog on" id="tog-sign" onclick="toggleFeat(this)"></button></div>
+    </div>
+  </div>
+  <div class="rs">
+    <div class="rs-title">Braille Files</div>
+    <div id="braille-files" style="display:flex;flex-direction:column;gap:5px">
+      <div style="font-size:12px;color:var(--muted)">No files yet — ask a question in Blind/Partial mode.</div>
+    </div>
+  </div>
+  <div class="rs" style="flex:1">
+    <div class="rs-title">About</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.7">
+      AccessLearn uses <strong style="color:var(--text)">Gemini 2.5 Flash</strong>, MediaPipe, gTTS, pydub, and SpeechRecognition to make lectures accessible to users with visual, hearing, or speech disabilities.
+    </div>
+  </div>
+</div>
+
+</main>
+</div><!-- /app -->
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span id="t-icon">✅</span><span id="t-msg">Done</span>
+</div>
+
+<!-- Hidden audio player for TTS answers -->
+<audio id="answerAudio" style="display:none"></audio>
+
+<script>
+// ── Braille (client-side, instant feedback) ────────────────────────────────
+const BL=[1,3,9,25,17,11,27,19,10,26,5,7,13,29,21,15,31,23,14,30,69,71,90,77,93,85];
+const B=0x2800,NS=String.fromCodePoint(B+60),CS=String.fromCodePoint(B+32),SP=String.fromCodePoint(B);
+function l2br(c){const i=c.toLowerCase().charCodeAt(0)-97;return i>=0&&i<26?String.fromCodePoint(B+BL[i]):'?'}
+function txt2br(t){let o=[],i=0;while(i<t.length){const c=t[i];
+  if(/\s/.test(c)){o.push(SP);i++;continue}
+  if(/\d/.test(c)){o.push(NS);while(i<t.length&&/\d/.test(t[i])){const d=t[i];o.push(l2br(d==='0'?'j':String.fromCharCode(97+parseInt(d)-1)));i++}continue}
+  if(/[a-zA-Z]/.test(c)){if(c===c.toUpperCase()&&c!==c.toLowerCase())o.push(CS);o.push(l2br(c));i++;continue}
+  o.push('?');i++}return o.join('')}
+
+// ── Sign gestures ───────────────────────────────────────────────────────────
+const SIGNS={A:'👊',B:'✋',C:'🤏',D:'☝️',E:'🤘',F:'🤙',G:'👉',H:'🤞',I:'🤟',J:'🤙',
+  K:'✌️',L:'🤙',M:'✊',N:'🤜',O:'⭕',P:'👇',Q:'👆',R:'✌️',S:'✊',T:'👍',U:'✌️',
+  V:'✌️',W:'🖖',X:'☝️',Y:'🤙',Z:'☝️'};
+
+// ── State ──────────────────────────────────────────────────────────────────
+let audioState={playing:false,paused:false,posMs:0,durMs:0};
+let feats={tts:true,braille:true,voice:true,camera:false,sign:true};
+let ttsCount=0,brailleCount=0,currentBrailleFile='';
+let voicePollTimer=null;
+let progTimer=null;
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg,icon='✅'){
+  document.getElementById('t-msg').textContent=msg;
+  document.getElementById('t-icon').textContent=icon;
+  const el=document.getElementById('toast');el.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// ── Mode switch ────────────────────────────────────────────────────────────
+function switchMode(m){
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`[data-m="${m}"]`).classList.add('active');
+  document.getElementById(`panel-${m}`).classList.add('active');
+}
+
+// ── File upload ────────────────────────────────────────────────────────────
+async function uploadAudio(inp){
+  const f=inp.files[0]; if(!f) return;
+  const fd=new FormData(); fd.append('file',f);
+  toast('📂 Uploading…','📂');
+  const r=await fetch('/api/audio/upload',{method:'POST',body:fd});
+  const d=await r.json();
+  if(d.error){toast('❌ '+d.error,'❌');return}
+  audioState.durMs=d.duration_ms||0;
+  const name=d.filename; const dur=fmtMs(audioState.durMs);
+  ['b','p','m'].forEach(pfx=>{
+    const fn=document.getElementById(pfx+'-fname');
+    const fm=document.getElementById(pfx+'-fmeta');
+    if(fn) fn.textContent=name;
+    if(fm) fm.textContent=`Duration: ${dur}`;
+    const dur_el=document.getElementById(pfx+'-dur');
+    if(dur_el) dur_el.textContent=dur;
+  });
+  document.getElementById('audioLoaded').style.display='block';
+  document.getElementById('audioLoaded').textContent=`✅ ${name} loaded (${dur})`;
+  toast(`✅ ${name} uploaded`,'🎵');
+}
+
+// ── Play/Pause ─────────────────────────────────────────────────────────────
+async function togglePlay(mode){
+  if(!audioState.playing){
+    const r=await fetch('/api/audio/play',{method:'POST'});
+    const d=await r.json();
+    if(d.error){toast('❌ '+d.error,'❌');return}
+    audioState.playing=true; audioState.paused=false;
+    setPlayBtn(mode,'⏸'); startProgTimer();
+    toast('▶ Lecture playing','🎧');
+  } else if(!audioState.paused){
+    await fetch('/api/audio/pause',{method:'POST'});
+    audioState.paused=true; setPlayBtn(mode,'▶');
+    toast('⏸ Paused');
+  } else {
+    await fetch('/api/audio/resume',{method:'POST'});
+    audioState.paused=false; setPlayBtn(mode,'⏸');
+    toast('▶ Resumed');
+  }
+}
+
+function setPlayBtn(mode,sym){
+  const map={blind:'b-playbtn',partial:'p-playbtn',mute:'m-playbtn'};
+  const el=document.getElementById(map[mode]);
+  if(el) el.textContent=sym;
+}
+
+async function seekAudio(e,track,mode='blind'){
+  const pct=(e.clientX-track.getBoundingClientRect().left)/track.offsetWidth*100;
+  await fetch('/api/audio/seek',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({percent:pct})});
+  updateProgBar(pct);
+}
+
+async function seekRel(deltaMs){
+  const r=await fetch('/api/audio/status');
+  const d=await r.json();
+  const newPos=Math.max(0,Math.min((d.position_ms||0)+deltaMs, d.duration_ms||0));
+  const pct=d.duration_ms?newPos/d.duration_ms*100:0;
+  await fetch('/api/audio/seek',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({percent:pct})});
+}
+
+function startProgTimer(){
+  clearInterval(progTimer);
+  progTimer=setInterval(async()=>{
+    const r=await fetch('/api/audio/status');
+    const d=await r.json();
+    audioState={...audioState,...d};
+    const pct=d.duration_ms? d.position_ms/d.duration_ms*100 : 0;
+    updateProgBar(pct);
+    document.getElementById('b-cur').textContent=fmtMs(d.position_ms);
+    document.getElementById('m-cur').textContent=fmtMs(d.position_ms);
+    if(!d.is_playing && !d.paused){ clearInterval(progTimer); resetPlayBtns(); }
+  },500);
+}
+
+function updateProgBar(pct){
+  ['b-prog','p-prog','m-prog'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.width=pct+'%';
+  });
+}
+function resetPlayBtns(){['b-playbtn','p-playbtn','m-playbtn'].forEach(id=>{
+  const el=document.getElementById(id);if(el)el.textContent='▶';
+})}
+
+// ── Q&A ────────────────────────────────────────────────────────────────────
+async function sendQ(mode){
+  const inpId={blind:'b-inp',partial:'p-inp',deaf:'d-inp',mute:'m-inp'}[mode];
+  const inp=document.getElementById(inpId);
+  const q=inp.value.trim(); if(!q) return;
+  inp.value='';
+
+  // Update stats
+  document.getElementById('st-q').textContent=parseInt(document.getElementById('st-q').textContent)+1;
+
+  if(mode==='blind'||mode==='deaf'){
+    const msgs=document.getElementById(mode==='blind'?'b-msgs':'d-msgs');
+    msgs.innerHTML+=`<div class="msg user"><div class="msg-av">🙋</div><div class="msg-bubble">${esc(q)}</div></div>`;
+    msgs.innerHTML+=`<div class="msg ai" id="ai-typing"><div class="msg-av">🤖</div><div class="msg-bubble"><span class="spin"></span>Asking Gemini…</div></div>`;
+    msgs.scrollTop=msgs.scrollHeight;
+  } else if(mode==='partial'){
+    document.getElementById('p-answer').innerHTML='<span class="spin"></span> Getting answer…';
+  } else if(mode==='mute'){
+    document.getElementById('m-answer').innerHTML='<span class="spin"></span> Getting answer…';
+  }
+
+  const body={question:q,mode,
+    tts:document.getElementById('tog-tts').classList.contains('on')&&feats.tts,
+    braille:document.getElementById('tog-braille').classList.contains('on')&&feats.braille,
+    speed:parseFloat(document.getElementById('speed-slider').value)/10
+  };
+
+  try{
+    const r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.error){toast('❌ '+d.error,'❌');return}
+    document.getElementById('st-a').textContent=parseInt(document.getElementById('st-a').textContent)+1;
+
+    // Update UI per mode
+    if(mode==='blind'){
+      const msgs=document.getElementById('b-msgs');
+      const typing=document.getElementById('ai-typing');
+      if(typing) typing.querySelector('.msg-bubble').innerHTML=esc(d.answer);
+      if(d.braille){
+        document.getElementById('b-braille').textContent=d.braille;
+        document.getElementById('b-bfile').textContent=d.braille_file||'';
+        currentBrailleFile=d.braille_file||'';
+        brailleCount++;
+        document.getElementById('st-br').textContent=brailleCount;
+        addBrailleFile(d.braille_file);
+      }
+    }
+    else if(mode==='partial') document.getElementById('p-answer').textContent=d.answer;
+    else if(mode==='deaf'){
+      const msgs=document.getElementById('d-msgs');
+      const typing=document.getElementById('ai-typing');
+      if(typing) typing.querySelector('.msg-bubble').innerHTML=esc(d.answer);
+    }
+    else if(mode==='mute'){
+      document.getElementById('m-answer').textContent=d.answer;
+      document.getElementById('m-sign-sub').textContent=`Showing sign alphabet for answer (${d.answer.length} chars)`;
+      buildSignGrid(d.answer.slice(0,40));
+    }
+
+    // Play TTS audio if returned
+    if(d.audio_file){
+      ttsCount++;
+      document.getElementById('st-tts').textContent=ttsCount;
+      playAnswerAudio('/outputs/'+d.audio_file);
+      toast('🔊 Speaking answer','🔊');
+    } else toast('✅ Answer ready');
+
+    // Scroll msgs
+    ['b-msgs','d-msgs'].forEach(id=>{const el=document.getElementById(id);if(el)el.scrollTop=el.scrollHeight;});
+
+  } catch(e){ toast('❌ Network error: '+e,'❌'); }
+}
+
+// ── Voice commands ─────────────────────────────────────────────────────────
+async function startVoice(){
+  const r=await fetch('/api/voice/start',{method:'POST'});
+  const d=await r.json();
+  if(d.error){toast('❌ '+d.error,'❌');return}
+  document.getElementById('b-mic').classList.remove('off');
+  document.getElementById('b-wave').classList.remove('off');
+  document.getElementById('b-vstat').textContent='Listening… say "pause" to ask';
+  document.getElementById('blind-badge').textContent='🎤 Voice Active';
+  toast('🎤 Voice control started');
+  voicePollTimer=setInterval(pollVoice,800);
+}
+
+async function stopVoice(){
+  await fetch('/api/voice/stop',{method:'POST'});
+  clearInterval(voicePollTimer);
+  document.getElementById('b-mic').classList.add('off');
+  document.getElementById('b-wave').classList.add('off');
+  document.getElementById('b-vstat').textContent='Voice stopped';
+  document.getElementById('blind-badge').textContent='Voice Ready';
+  toast('⏹ Voice stopped');
+}
+
+async function pollVoice(){
+  const r=await fetch('/api/voice/events');
+  const d=await r.json();
+  (d.events||[]).forEach(ev=>{
+    document.getElementById('b-vstat').textContent=ev.data;
+    if(ev.type==='answer'){
+      try{
+        const a=JSON.parse(ev.data);
+        const msgs=document.getElementById('b-msgs');
+        msgs.innerHTML+=`<div class="msg user"><div class="msg-av">🎤</div><div class="msg-bubble">${esc(a.question)}</div></div>`;
+        msgs.innerHTML+=`<div class="msg ai"><div class="msg-av">🤖</div><div class="msg-bubble">${esc(a.answer)}</div></div>`;
+        msgs.scrollTop=msgs.scrollHeight;
+        if(a.braille){
+          document.getElementById('b-braille').textContent=a.braille;
+          document.getElementById('b-bfile').textContent=a.braille_file||'';
+          currentBrailleFile=a.braille_file||'';
+          brailleCount++;
+          document.getElementById('st-br').textContent=brailleCount;
+          addBrailleFile(a.braille_file);
+        }
+        if(a.audio_file){ttsCount++;document.getElementById('st-tts').textContent=ttsCount;playAnswerAudio('/outputs/'+a.audio_file);}
+        document.getElementById('st-q').textContent=parseInt(document.getElementById('st-q').textContent)+1;
+        document.getElementById('st-a').textContent=parseInt(document.getElementById('st-a').textContent)+1;
+      }catch(e){}
+    }
+  });
+}
+
+// ── Sign detection ─────────────────────────────────────────────────────────
+async function startSign(dur=10,mode='partial'){
+  const badge=document.getElementById(mode==='deaf'?'d-livebadge':'p-livebadge');
+  if(badge) badge.classList.add('on');
+  toast('📷 Camera opening… show your hand sign','📷');
+  await fetch('/api/sign/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({duration:dur})});
+
+  // Poll until done
+  const poll=setInterval(async()=>{
+    const r=await fetch('/api/sign/status');
+    const d=await r.json();
+    if(d.status==='done'){
+      clearInterval(poll);
+      if(badge) badge.classList.remove('on');
+      const letter=d.detected||'?';
+      if(mode==='deaf'){
+        document.getElementById('d-detected').textContent=letter;
+        if(letter&&letter!=='?'){
+          document.getElementById('d-inp').value=`What does "${letter}" mean in this lecture?`;
+          toast(`✋ Sign "${letter}" detected — click Send`,'🤟');
+        } else toast('⏰ No clear sign detected');
+      } else {
+        toast(`✋ Detected sign: "${letter}"`,'🤟');
+      }
+    }
+  },1000);
+}
+
+// ── Sign grid (mute mode) ──────────────────────────────────────────────────
+function buildSignGrid(text){
+  const grid=document.getElementById('sign-grid'); if(!grid) return;
+  grid.innerHTML='';
+  text.toUpperCase().replace(/[^A-Z]/g,'').split('').slice(0,48).forEach((l,i)=>{
+    const c=document.createElement('div'); c.className='sc';
+    c.innerHTML=`<div class="ges">${SIGNS[l]||'❓'}</div><div class="ltr">${l}</div>`;
+    grid.appendChild(c);
+    setTimeout(()=>c.classList.add('hi'),i*150);
+    setTimeout(()=>c.classList.remove('hi'),i*150+600);
+  });
+}
+
+// ── TTS audio playback ─────────────────────────────────────────────────────
+function playAnswerAudio(url){
+  const a=document.getElementById('answerAudio');
+  a.src=url; a.play().catch(e=>console.warn('Audio play:',e));
+}
+
+// ── Speed ──────────────────────────────────────────────────────────────────
+function setSpeed(el){
+  const v=(el.value/10).toFixed(1);
+  document.getElementById('speed-lbl').textContent=v+'×';
+  fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tts_speed:parseFloat(v)})});
+}
+
+// ── Feature toggles ────────────────────────────────────────────────────────
+function toggleFeat(btn){
+  btn.classList.toggle('on');
+  btn.closest('.fp').classList.toggle('on');
+}
+
+// ── Download braille ───────────────────────────────────────────────────────
+function downloadBraille(){
+  if(!currentBrailleFile){toast('No Braille file yet — ask a question first','⠿');return}
+  window.open('/outputs/'+currentBrailleFile,'_blank');
+}
+
+// ── Braille file list ──────────────────────────────────────────────────────
+function addBrailleFile(fname){
+  if(!fname) return;
+  const container=document.getElementById('braille-files');
+  const item=document.createElement('div'); item.className='file-item';
+  const ts=fname.match(/\d{8}_\d{6}/)?.[0]||'';
+  item.innerHTML=`<span>📄</span><div style="flex:1"><div style="color:var(--text)">${fname}</div><div style="color:var(--muted);font-size:10px;font-family:var(--ff-mono)">${ts}</div></div><span style="color:var(--muted)">⬇</span>`;
+  item.onclick=()=>window.open('/outputs/'+fname,'_blank');
+  // Remove placeholder text
+  if(container.querySelector('div[style]')) container.innerHTML='';
+  container.insertBefore(item, container.firstChild);
+}
+
+// ── Capability badges ──────────────────────────────────────────────────────
+async function loadCaps(){
+  try{
+    const r=await fetch('/api/state');
+    const d=await r.json();
+    const caps=d.capabilities||{};
+    const container=document.getElementById('capBadges');
+    const labels={pygame:'pygame',gemini:'Gemini',gtts:'TTS',pydub:'pydub',speech_recognition:'SpeechRecog',opencv:'Camera'};
+    Object.entries(labels).forEach(([k,label])=>{
+      const el=document.createElement('div');
+      el.className='cap-pill '+(caps[k]?'cap-ok':'cap-no');
+      el.textContent=caps[k]?`✓ ${label}`:`✗ ${label}`;
+      el.title=caps[k]?`${label} ready`:`pip install needed`;
+      container.appendChild(el);
+    });
+  }catch(e){}
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────────
+function fmtMs(ms){
+  if(!ms) return '0:00';
+  const s=Math.floor(ms/1000); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Init ──────────────────────────────────────────────────────────────────
+loadCaps();
+buildSignGrid('HELLO');
+</script>
+</body>
+</html>
