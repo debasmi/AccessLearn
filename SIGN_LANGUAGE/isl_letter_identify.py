@@ -4,11 +4,9 @@ import os
 from sklearn.metrics.pairwise import cosine_similarity
 import pickle
 
-# ---------- CONFIGURATION ----------
 DATASET_PATH = "/Users/debasmibasu/Documents/SIS/SIGN LANGUAGE/Indian"
-MODEL_PATH = "isl_model.pkl"  # For saving/loading trained features
+MODEL_PATH = "isl_model.pkl" 
 
-# ---------- STEP 1: Feature Extraction ----------
 def extract_features(image):
     """
     Extract features from a hand sign image using basic edge-based representation.
@@ -19,7 +17,6 @@ def extract_features(image):
     edges = cv2.Canny(blurred, 50, 150)
     return edges.flatten()
 
-# ---------- STEP 2: Load and Train Model ----------
 def train_model():
     """
     Train feature-based model using images from dataset.
@@ -37,7 +34,7 @@ def train_model():
 
         images = [img for img in os.listdir(letter_path) if img.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
-        for img_name in images[:20]:  # Use first 20 images per letter
+        for img_name in images[:20]:  
             img_path = os.path.join(letter_path, img_name)
             img = cv2.imread(img_path)
             if img is not None:
@@ -53,7 +50,6 @@ def train_model():
     print(f"Model trained and saved to {MODEL_PATH}")
     return letter_features
 
-# ---------- STEP 3: Load Model ----------
 def load_model():
     if os.path.exists(MODEL_PATH):
         print("Loading existing model...")
@@ -63,7 +59,6 @@ def load_model():
         print("No existing model found. Training new model...")
         return train_model()
 
-# ---------- STEP 4: Predict Letter ----------
 def predict_letter(frame, letter_features):
     """
     Predict which ISL letter the given frame represents.
@@ -79,7 +74,6 @@ def predict_letter(frame, letter_features):
 
     return best_match, best_score
 
-# ---------- STEP 5: Hand Detection ----------
 def detect_hand_region(frame):
     """
     Detect hand region based on skin color segmentation (HSV).
@@ -115,7 +109,6 @@ def is_hand_present(frame):
 
     return skin_percentage > 5, skin_percentage
 
-# ---------- STEP 6: Main Recognition Loop ----------
 def recognize_signs():
     """
     Capture webcam feed and perform ISL letter recognition.
@@ -164,7 +157,7 @@ def recognize_signs():
                     recognized_word += predicted_letter
                     print(f"Added letter: {predicted_letter} | Word so far: {recognized_word}")
 
-            # Color-code confidence levels
+          
             if confidence > 0.7:
                 color = (0, 255, 0)
             elif confidence > 0.4:
@@ -182,7 +175,7 @@ def recognize_signs():
             cv2.putText(display_frame, "Waiting for hand...", (10, 70),
                         cv2.FONT_HERSHEY_SIMPLEX, 1.2, (150, 150, 150), 3)
 
-        # Display recognized word
+   
         cv2.putText(display_frame, f"Word: {recognized_word}", (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         cv2.putText(display_frame, "Q: Quit | R: Retrain | C: Clear",
