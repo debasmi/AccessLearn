@@ -15,10 +15,8 @@ from pathlib import Path
 from flask import Flask, request, jsonify, render_template, send_from_directory, send_file
 from flask_cors import CORS
 
-# ── Add modules folder to path ──────────────────────────────────────────────
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "modules"))
 
-# ── Lazy imports (so app starts even if a lib is missing) ───────────────────
 try:
     import pygame
     pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=512)
@@ -70,11 +68,8 @@ from modules.audio_player import AudioPlayer
 from modules.tts_engine import speak_text_to_file
 from modules.sign_detector import detect_sign_from_camera
 
-# ── Flask app ────────────────────────────────────────────────────────────────
 app = Flask(__name__, template_folder="templates", static_folder="static")
 CORS(app)
-
-# ── Global state ─────────────────────────────────────────────────────────────
 STATE = {
     "audio_file": None,
     "is_playing": False,
@@ -98,9 +93,6 @@ STATE = {
 OUTPUTS_DIR = Path(__file__).parent / "outputs"
 OUTPUTS_DIR.mkdir(exist_ok=True)
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  ROUTES — Pages
-# ─────────────────────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -110,9 +102,6 @@ def index():
 def serve_output(filename):
     return send_from_directory(OUTPUTS_DIR, filename)
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  ROUTES — Audio
-# ─────────────────────────────────────────────────────────────────────────────
 
 @app.route("/api/audio/upload", methods=["POST"])
 def upload_audio():
@@ -225,9 +214,6 @@ def audio_status():
         "audio_file": os.path.basename(STATE["audio_file"]) if STATE["audio_file"] else None,
     })
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  ROUTES — Gemini Q&A
-# ─────────────────────────────────────────────────────────────────────────────
 
 @app.route("/api/ask", methods=["POST"])
 def ask():
@@ -243,7 +229,6 @@ def ask():
 
     STATE["session_questions"] += 1
 
-    # ── Gemini answer ────────────────────────────────────────────────────────
     answer = _ask_gemini(question)
     STATE["session_answered"] += 1
 
@@ -255,7 +240,6 @@ def ask():
         "audio_file": None,
     }
 
-    # ── Braille (blind / partial modes) ─────────────────────────────────────
     if braille and mode in ("blind", "partial"):
         braille_text = text_to_braille(answer)
         ts = time.strftime("%Y%m%d_%H%M%S")
@@ -288,11 +272,7 @@ def _ask_gemini(question: str) -> str:
     except Exception as e:
         return f"Gemini error: {e}"
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  ROUTES — Voice recognition (runs in background thread)
-# ─────────────────────────────────────────────────────────────────────────────
-
-voice_events = []   # ring buffer of events the frontend polls
+voice_events = []   
 
 @app.route("/api/voice/start", methods=["POST"])
 def voice_start():
@@ -404,10 +384,6 @@ def _voice_event(kind: str, data: str):
     if len(voice_events) > 50:
         voice_events.pop(0)
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  ROUTES — Camera / Sign detection
-# ─────────────────────────────────────────────────────────────────────────────
-
 sign_result = {"status": "idle", "detected": "", "frame_b64": ""}
 
 @app.route("/api/sign/start", methods=["POST"])
@@ -432,9 +408,6 @@ def _sign_detect_thread(duration: int):
     sign_result["detected"] = detected
     sign_result["status"] = "done"
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  ROUTES — Settings & state
-# ─────────────────────────────────────────────────────────────────────────────
 
 @app.route("/api/settings", methods=["POST"])
 def settings():
@@ -464,7 +437,6 @@ def state():
         }
     })
 
-# ─────────────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     print("\n" + "="*55)
