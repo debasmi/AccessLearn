@@ -6,22 +6,6 @@ Full loop:
   2. Send question to Gemini API   →  text answer
   3. Display answer as ISL signs   →  animated hand graphics
 
-Usage:
-  python isl_qa_pipeline.py \
-      --model_dir  isl_model \
-      --data_dir   /path/to/Indian \
-      --gemini_key YOUR_GEMINI_KEY          # or set env var GEMINI_API_KEY
-
-Controls (during sign capture):
-  SPACE   →  finish signing / submit question
-  ENTER   →  same as SPACE
-  BACKSPACE → delete last recognised character
-  Q / ESC →  quit
-
-Controls (during sign playback):
-  SPACE   →  pause / resume
-  Q / ESC →  skip to next character / stop
-"""
 
 import os
 import sys
@@ -41,16 +25,14 @@ import mediapipe as mp
 import torch
 import torch.nn as nn
 
-# -----------------------------------------------------------------------------
-# GEMINI CONFIGURATION  — replace placeholder or pass --gemini_key
-# -----------------------------------------------------------------------------
+
 GEMINI_API_KEY_PLACEHOLDER = "ownapikey"
 GEMINI_MODEL               = "gemini-2.0-flash"
 GEMINI_ENDPOINT            = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
     f"{GEMINI_MODEL}:generateContent"
 )
-# -----------------------------------------------------------------------------
+
 
 mp_hands       = mp.solutions.hands
 mp_drawing     = mp.solutions.drawing_utils
@@ -58,10 +40,6 @@ mp_draw_styles = mp.solutions.drawing_styles
 
 IMG_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
-
-# =============================================================================
-# 1.  ISL Recognition Model
-# =============================================================================
 
 class ISLNet(nn.Module):
     def __init__(self, input_dim, num_classes, dropout=0.4):
@@ -113,10 +91,6 @@ class ISLPredictor:
         return [(self.le.classes_[i], float(probs[i])) for i in top3_idx]
 
 
-# =============================================================================
-# 2.  Gemini
-# =============================================================================
-
 def ask_gemini(question: str, api_key: str) -> str:
     headers = {"Content-Type": "application/json"}
     payload = {
@@ -140,9 +114,6 @@ def ask_gemini(question: str, api_key: str) -> str:
         return "CONNECTION ERROR"
 
 
-# =============================================================================
-# 3.  Sign Output — animated hand graphics
-# =============================================================================
 
 W, H    = 720, 760
 HAND_W  = 460
@@ -326,9 +297,6 @@ def display_answer_as_signs(text: str, sign_index: dict, speed: float = 1.2):
     cv2.imshow(win, done); cv2.waitKey(0); cv2.destroyAllWindows()
 
 
-# =============================================================================
-# 4.  Sign Input — webcam question capture
-# =============================================================================
 
 HUD_BG  = (20, 20, 30);   HUD_GRN = (80, 220, 140);  HUD_YEL = (80, 200, 220)
 HUD_WHT = (230, 230, 230); HUD_DIM = (100, 100, 120)
@@ -354,14 +322,10 @@ def _draw_capture_hud(frame, question_so_far, current_char, conf, status):
 
 
 def capture_question_from_signs(predictor: ISLPredictor):
-    """
-    Webcam loop: hold a sign for HOLD_FRAMES to lock it in.
-    SPACE/ENTER submits; BACKSPACE deletes last letter; Q/ESC quits.
-    Returns decoded question string, or None to quit.
-    """
-    HOLD_FRAMES = 18    # frames to hold before locking (~0.6 s at 30 fps)
-    SMOOTH_WIN  = 8     # majority-vote window
-    CONF_THRESH = 0.65  # min confidence
+ 
+    HOLD_FRAMES = 18    
+    SMOOTH_WIN  = 8    
+    CONF_THRESH = 0.65 
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -438,9 +402,6 @@ def capture_question_from_signs(predictor: ISLPredictor):
     return "".join(question) if question else None
 
 
-# =============================================================================
-# 5.  Main Pipeline
-# =============================================================================
 
 def main():
     parser = argparse.ArgumentParser(description="ISL Q&A Pipeline")
