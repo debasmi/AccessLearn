@@ -9,24 +9,18 @@ import google.generativeai as genai
 from pydub import AudioSegment
 import tempfile
 from braille import text_to_braille
-# 🔑 Configure Gemini API
 genai.configure(api_key="ownapikey")
 
 AUDIO_FILE = "/Users/debasmibasu/Documents/SIS/blind user/lecture1audio.wav"
 
-# Initialize pygame mixer
 pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=512)
 pygame.mixer.init()
-
-# Global state
 is_playing = False
 paused = False
 stop_audio = False
 pause_start_time = 0
 total_paused_time = 0
 playback_start_time = 0
-
-
 class AudioPlayer:
     def __init__(self, audio_file):
         self.audio_file = audio_file
@@ -49,21 +43,19 @@ class AudioPlayer:
         if not self.full_audio:
             return False
             
-        # Create audio segment from current position to end
         remaining_audio = self.full_audio[start_ms:]
-        
-        # Export to temporary WAV file for pygame
+    
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
         remaining_audio.export(temp_file.name, format="wav")
         
-        # Load and play with pygame
+       
         try:
             sound = pygame.mixer.Sound(temp_file.name)
             pygame.mixer.Sound.play(sound)
             
-            # Clean up temp file after a short delay
+          
             def cleanup():
-                time.sleep(0.5)  # Wait for pygame to load the file
+                time.sleep(0.5)  
                 try:
                     os.unlink(temp_file.name)
                 except:
@@ -105,7 +97,7 @@ def play_audio():
     print(f"🎵 Starting audio playback from beginning...")
     playback_start_time = time.time()
     
-    # Start playing from the beginning
+    
     if not player.play_from_position(current_position):
         return
     
@@ -117,7 +109,7 @@ def play_audio():
             break
         
         if paused and player.is_playing():
-            # Calculate current position when pausing
+            
             elapsed_real_time = (time.time() - playback_start_time) * 1000  # Convert to ms
             current_position = elapsed_real_time - total_paused_time
             
@@ -126,18 +118,18 @@ def play_audio():
             
             print(f"🔇 Audio paused at {current_position/1000:.1f} seconds")
             
-            # Wait while paused
+           
             while paused and not stop_audio:
                 time.sleep(0.1)
             
             if not stop_audio:
-                # Calculate how long we were paused
+                
                 pause_duration = (time.time() - pause_start_time) * 1000
                 total_paused_time += pause_duration
                 
                 print(f"▶️ Resuming from {current_position/1000:.1f} seconds...")
                 
-                # Resume from the calculated position
+                
                 if current_position < player.get_duration_ms():
                     player.play_from_position(int(current_position))
                 else:
@@ -145,7 +137,7 @@ def play_audio():
                     is_playing = False
                     break
         
-        # Check if audio finished naturally
+        
         if not player.is_playing() and not paused and is_playing:
             elapsed_real_time = (time.time() - playback_start_time) * 1000
             actual_position = elapsed_real_time - total_paused_time
@@ -176,15 +168,11 @@ def speak_text(text: str, answer_speed: float = 1.5):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_file:
             temp_mp3_path = tmp_file.name
 
-        # Generate TTS audio
+        
         tts = gTTS(text=text, lang="en")
         tts.save(temp_mp3_path)
-
-        # Convert to wav for pygame
         temp_wav_path = temp_mp3_path.replace(".mp3", ".wav")
         audio = AudioSegment.from_mp3(temp_mp3_path)
-
-        # ✅ Apply playback speed only to Gemini answers
         if answer_speed != 1.0:
             audio = audio._spawn(
                 audio.raw_data,
@@ -193,14 +181,13 @@ def speak_text(text: str, answer_speed: float = 1.5):
 
         audio.export(temp_wav_path, format="wav")
 
-        # Play the sped-up audio
         tts_sound = pygame.mixer.Sound(temp_wav_path)
         pygame.mixer.Sound.play(tts_sound)
 
         while pygame.mixer.get_busy():
             time.sleep(0.1)
 
-        # Cleanup
+ 
         try:
             os.remove(temp_mp3_path)
             os.remove(temp_wav_path)
@@ -217,8 +204,7 @@ def listen_for_commands():
     global paused, stop_audio, pause_start_time
     
     recognizer = sr.Recognizer()
-    
-    # Try to find the best microphone
+
     mic_list = sr.Microphone.list_microphone_names()
     print(f"🎤 Available microphones: {len(mic_list)}")
     
@@ -228,7 +214,7 @@ def listen_for_commands():
         print(f"❌ Microphone error: {e}")
         return
     
-    # Initial calibration
+
     try:
         with mic as source:
             print("🎤 Calibrating microphone... (please stay quiet)")
@@ -240,7 +226,7 @@ def listen_for_commands():
 
     while not stop_audio:
         try:
-            # Listen for command with shorter timeout
+           
             with mic as source:
                 print("👂 Listening for command...")
                 audio = recognizer.listen(source, timeout=5, phrase_time_limit=3)
@@ -252,8 +238,7 @@ def listen_for_commands():
             if any(word in command for word in ["pause", "stop", "question", "ask"]) and not paused:
                 print("⏸️ Pausing for Q&A mode...")
                 paused = True
-                
-                # Listen for question
+               
                 print("🤔 What's your question? (You have 15 seconds)")
                 try:
                     with mic as q_source:
@@ -261,19 +246,19 @@ def listen_for_commands():
                         question = recognizer.recognize_google(question_audio).strip()
                         print(f"❓ Question: {question}")
 
-                    # Get answer from Gemini
+                  
                     '''print("🤖 Getting answer from Gemini...")
                     answer = ask_gemini(question)
                     print(f"💡 Answer: {answer}")
 
                     # Speak answer
                     speak_text(answer)'''
-                    # Get answer from Gemini
+                 
                     print("🤖 Getting answer from Gemini...")
                     answer = ask_gemini(question)
                     print(f"💡 Answer: {answer}")
 
-                    # Convert Gemini answer to Braille
+                    
                     braille_output = text_to_braille(answer)
                     print("\n⠿ Braille representation:")
                     print(braille_output)
@@ -282,11 +267,11 @@ def listen_for_commands():
                     with open("gemini_answer_braille.txt", "w", encoding="utf-8") as f:
                         f.write(braille_output)
 
-                    # Speak answer
+                    
                     speak_text(answer)
 
 
-                    # Auto-resume after answer
+                   
                     print("▶️ Auto-resuming playback in 2 seconds...")
                     time.sleep(2)
                     paused = False
@@ -308,10 +293,10 @@ def listen_for_commands():
                 break
 
         except sr.WaitTimeoutError:
-            # Timeout is normal, continue listening
+           
             continue
         except sr.UnknownValueError:
-            # Could not understand audio, continue
+           
             continue
         except sr.RequestError as e:
             print(f"❌ Speech Recognition service error: {e}")
@@ -334,11 +319,11 @@ def main():
     print("=" * 50)
     
     try:
-        # Start audio playback in a separate thread
+       
         audio_thread = threading.Thread(target=play_audio, daemon=True)
         audio_thread.start()
         
-        # Start voice command listening (main thread)
+     
         listen_for_commands()
         
     except KeyboardInterrupt:
